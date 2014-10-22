@@ -12,7 +12,6 @@ import subprocess
 import sys
 import os
 import re
-import types
 
 shouldPrint = True
 '''
