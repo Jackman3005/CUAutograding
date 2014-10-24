@@ -1,8 +1,8 @@
-
-
+import GradeUtils
 
 def TestGetAllNumbersFromString():
-    None
+    
+    GradeUtils.CppFunctionFinder('Lab9.cpp')
     
     
     
