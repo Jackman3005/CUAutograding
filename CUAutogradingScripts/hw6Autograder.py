@@ -12,6 +12,9 @@ import subprocess
 import sys
 import os
 import re
+import CPPCompiler
+from SeedFileLoader import SeedFileLoader
+from ProgramRunner import ProgramRunner
 
 shouldPrint = True
 '''
@@ -76,10 +79,10 @@ def findHomeworkFiles(folderNameContainingSubmission):
         myPrint("Could not find all 3 files! Only found",len(hwFileNameDictionary),":",foundFiles, file=sys.stderr)
     return (hwFileNameDictionary,deductions)
 
-def sublistIsInListWithCorrectOrder(sublist, list):                                                         
+def sublistIsInListWithCorrectOrder(sublist, bigList):                                                         
     L = len(sublist) 
-    for i in range(len(list)-L +1): 
-            if list[i:i+L] == sublist: 
+    for i in range(len(bigList)-L +1): 
+            if bigList[i:i+L] == sublist: 
                     return True 
     return False 
 
@@ -89,83 +92,59 @@ def gradeProblemOne(problem1FileName):
     #
     #
     deductions = []
-    try:
-        myPrint("--------------Compiling Problem 1--------------")
-        subprocess.check_call("g++ "+problem1FileName+" -std=c++11 -o problem1",shell=True) 
-            
-    except Exception:
-        myPrint("-------------ERROR WHILE COMPILING!------------",file=sys.stderr)
-                
+    compiledFileName = "problem1"
+    successfullyCompiled = CPPCompiler.compileCPPFile(problem1FileName, compiledFileName, "Problem 1")
+    if (not successfullyCompiled):
         deductions.append((-100/3,"Problem 1 did not compile!"))
         return deductions
         
+    seedLoader = SeedFileLoader()
+    seeds = seedLoader.loadSeedsFromFile("Seed1.txt")
     
-    try:
-        seed1 = open("Seed1.txt",'r')
-    except IOError:
-        myPrint("Seed file for Problem 1 not Found!", file=sys.stderr)
-        sys.exit(1)
-    
-    
-    seed_count = 0
-    seed_values = []
-    for line in seed1:
-        seed_count += 1
-        temp2 = getAllNumbersFromString(line)
-        seed_values.append(temp2)
     
     problemsCorrect = 0
     error_bounds = 0.5
-    try:
-        for i in range(0,seed_count):
-            out=""
-            myPrint("Testing Problem1 with inputs of " + str(int(seed_values[i][0])) + " " + str(int(seed_values[i][1])) + " " + str(int(seed_values[i][2])) + " " + str(int(seed_values[i][3])) +" " + str(int(seed_values[i][4])) +"...", file=sys.stderr)
-            try:
-                p1Process = subprocess.Popen("./problem1",stdout=subprocess.PIPE,stdin=subprocess.PIPE,shell=True)
-                out,err = p1Process.communicate((str(int(seed_values[i][0]))+"\n" + str(int(seed_values[i][1])) +"\n" + str(int(seed_values[i][2]))+"\n"+str(int(seed_values[i][3]))+"\n"+str(int(seed_values[i][4]))).encode(),timeout=5)
-                
+
+    for seed in seeds:
         
-            except subprocess.CalledProcessError as err:
-                myPrint("Error running submission: {!s}".format(err), file=sys.stderr)
-                deductions.append((-100/3,"Error Running Problem 1 Submission"))
-                return deductions
+        programRunner = ProgramRunner()
+        successfullyRan,output = programRunner.run(compiledFileName, seed.commandLineInputs(), seed.consoleInputs())
+        if (not successfullyRan):
+            deductions.append((-100/3,output))
+            return deductions
         
-            outputStr = out.decode()
-            responses = getAllNumbersFromString(outputStr)
-            expectedPasserRating = seed_values[i][5]
-            expectedOutputString = "The passer rating is "+str(expectedPasserRating)
-            hadCorrectValuesButIncorrectlyFormattedString = False
-            
-            
-            if (expectedOutputString in outputStr):
-                problemsCorrect += 1
-            elif (len(responses) > 0):
-                previousProblemsCorrect = problemsCorrect;
-                for response in responses:
-                    #if answer given is within acceptable bounds, marked as correct and points added
-                    if( abs(expectedPasserRating - response) < error_bounds):
-                        problemsCorrect += 1
-                if (previousProblemsCorrect == problemsCorrect):
-                    #if not correct, prints the error
-                    myPrint("Looking for: {!s}".format(seed_values[i][5]), file=sys.stderr)
-                    myPrint("Received: {!s}".format(responses), file=sys.stderr)
-                else:
-                    hadCorrectValuesButIncorrectlyFormattedString = True
-        if problemsCorrect == seed_count:
-            if (hadCorrectValuesButIncorrectlyFormattedString):
-                myPrint("Problem 1 had correct values, but the format of the string was incorrect")
-                deductions.append((-5,"Problem 1 had correct values, but was formatted incorrectly"))
+        responses = getAllNumbersFromString(output)
+        expectedPasserRating = seed.expectedOutputs()[0]
+        expectedOutputString = "The passer rating is "+str(expectedPasserRating)
+        hadCorrectValuesButIncorrectlyFormattedString = False
+        
+        
+        if (expectedOutputString in output):
+            problemsCorrect += 1
+        elif (len(responses) > 0):
+            previousProblemsCorrect = problemsCorrect;
+            for response in responses:
+                #if answer given is within acceptable bounds, marked as correct and points added
+                if( abs(expectedPasserRating - response) < error_bounds):
+                    problemsCorrect += 1
+            if (previousProblemsCorrect == problemsCorrect):
+                #if not correct, prints the error
+                myPrint("Looking for: {!s}".format(seed.expectedOutputs()[0]), file=sys.stderr)
+                myPrint("Received: {!s}".format(responses), file=sys.stderr)
             else:
-                myPrint("Problem 1 correct!", file=sys.stderr)
+                hadCorrectValuesButIncorrectlyFormattedString = True
+    if problemsCorrect == len(seeds):
+        if (hadCorrectValuesButIncorrectlyFormattedString):
+            myPrint("Problem 1 had correct values, but the format of the string was incorrect")
+            deductions.append((-5,"Problem 1 had correct values, but was formatted incorrectly"))
         else:
-            myPrint("Problem 1 INCORRECT", file=sys.stderr)
-            deductions.append(((-100/3)*((seed_count - problemsCorrect)/seed_count), str(seed_count-problemsCorrect) + " out of " + str(seed_count) + " of the inputs for problem 1 did not produce the correct output."))
-        
-        
-        
-    except subprocess.TimeoutExpired:
-        deductions.append((-100/3,"Problem 1 took longer than 5 seconds to run. Most likely an infinite loop or prompt for input!"))
+            myPrint("Problem 1 correct!", file=sys.stderr)
+    else:
+        myPrint("Problem 1 INCORRECT", file=sys.stderr)
+        deductions.append(((-100/3)*((len(seeds) - problemsCorrect)/len(seeds)), str(len(seeds)-problemsCorrect) + " out of " + str(len(seeds)) + " of the inputs for problem 1 did not produce the correct output."))
     
+    
+   
         
     return deductions
 
