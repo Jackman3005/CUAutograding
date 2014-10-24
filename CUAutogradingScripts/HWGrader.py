@@ -19,8 +19,8 @@ studentIdKeys = Students.keys()
 numOfStudents = len(studentIdKeys)
 studentCount = 1
 for studentId in studentIdKeys:
-    #if (studentCount >= 10):
-        #break
+    #if (studentCount >= 30):
+     #   break
     print("Grading student " + str(studentCount)+"/" + str(numOfStudents) + " " + Students[studentId]["FN"] + " " + Students[studentId]["LN"] )
     if (Students[studentId]['Directory'] != None):
         Students[studentId]['Grade'], Students[studentId]['Comments'] = hw6Autograder.gradeSubmission(zipFilesFolderLocation + "/" + Students[studentId]['Directory'])

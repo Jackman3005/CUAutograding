@@ -43,8 +43,8 @@ def ReturnStudentGradingDictionary(moodle_roster_filename,roster_filename, submi
         for x in folderList:
             folderName = x.lower()
             if email in moodleRoster: #some have a nickname in moodle. check to see if that name is listed
-                cleanedMoodleFN = re.sub("[^a-zA-Z0-9_-]","",moodleRoster[email]["FN"].lower())
-                cleanedMoodleLN = re.sub("[^a-zA-Z0-9_-]","",moodleRoster[email]["LN"].lower())
+                cleanedMoodleFN = re.sub("[^ a-zA-Z0-9_-]","",moodleRoster[email]["FN"].lower())
+                cleanedMoodleLN = re.sub("[^ a-zA-Z0-9_-]","",moodleRoster[email]["LN"].lower())
                 firstNameInFolderName = (cleanedMoodleFN in folderName or cleanedFN in folderName)
                 lastNameInFolderName = (cleanedMoodleLN in folderName or cleanedLN in folderName)
             else:

@@ -76,6 +76,12 @@ def findHomeworkFiles(folderNameContainingSubmission):
         myPrint("Could not find all 3 files! Only found",len(hwFileNameDictionary),":",foundFiles, file=sys.stderr)
     return (hwFileNameDictionary,deductions)
 
+def sublistIsInListWithCorrectOrder(sublist, list):                                                         
+    L = len(sublist) 
+    for i in range(len(list)-L +1): 
+            if list[i:i+L] == sublist: 
+                    return True 
+    return False 
 
 def gradeProblemOne(problem1FileName):
     #
@@ -126,20 +132,37 @@ def gradeProblemOne(problem1FileName):
         
             outputStr = out.decode()
             responses = getAllNumbersFromString(outputStr)
-            if (len(responses) > 0):
-                #if answer given is within acceptable bounds, marked as correct and points added       
-                if( abs(seed_values[i][5] - responses[0]) < error_bounds):
-                    problemsCorrect += 1
-                else:
+            expectedPasserRating = seed_values[i][5]
+            expectedOutputString = "The passer rating is "+str(expectedPasserRating)
+            hadCorrectValuesButIncorrectlyFormattedString = False
+            
+            
+            if (expectedOutputString in outputStr):
+                problemsCorrect += 1
+            elif (len(responses) > 0):
+                previousProblemsCorrect = problemsCorrect;
+                for response in responses:
+                    #if answer given is within acceptable bounds, marked as correct and points added
+                    if( abs(expectedPasserRating - response) < error_bounds):
+                        problemsCorrect += 1
+                if (previousProblemsCorrect == problemsCorrect):
                     #if not correct, prints the error
                     myPrint("Looking for: {!s}".format(seed_values[i][5]), file=sys.stderr)
-                    myPrint("Received: {!s}".format(responses[0]), file=sys.stderr)
-            
+                    myPrint("Received: {!s}".format(responses), file=sys.stderr)
+                else:
+                    hadCorrectValuesButIncorrectlyFormattedString = True
         if problemsCorrect == seed_count:
-            myPrint("Problem 1 correct!", file=sys.stderr)
-        elif i == (seed_count-1):
+            if (hadCorrectValuesButIncorrectlyFormattedString):
+                myPrint("Problem 1 had correct values, but the format of the string was incorrect")
+                deductions.append((-5,"Problem 1 had correct values, but was formatted incorrectly"))
+            else:
+                myPrint("Problem 1 correct!", file=sys.stderr)
+        else:
             myPrint("Problem 1 INCORRECT", file=sys.stderr)
             deductions.append(((-100/3)*((seed_count - problemsCorrect)/seed_count), str(seed_count-problemsCorrect) + " out of " + str(seed_count) + " of the inputs for problem 1 did not produce the correct output."))
+        
+        
+        
     except subprocess.TimeoutExpired:
         deductions.append((-100/3,"Problem 1 took longer than 5 seconds to run. Most likely an infinite loop or prompt for input!"))
     
@@ -190,21 +213,29 @@ def gradeProblemTwo(problem2FileName):
         
             outputStr = output.decode()
             response = getAllNumbersFromString(outputStr)
+            
+            expectedOutputValues = [seed_values[i][1],seed_values[i][2],seed_values[i][3]]
+            expectedOutputString = "The time is " + str(seed_values[i][1]) + " hours, " + str(seed_values[i][2]) + " minutes, and " + str(seed_values[i][3]) + " seconds"
+            hadCorrectValuesButIncorrectlyFormattedString = False
             #response.append(splitted[-1].rstrip('.'))
             if (len(response) >= 3):
-                hoursDelta = abs(response[0] - seed_values[i][1])
-                minutesDelta = abs(response[1] - seed_values[i][2])
-                secondsDelta = abs(response[2] - seed_values[i][3])       
-                if ((hoursDelta + minutesDelta + secondsDelta) == 0):
-                        problemsCorrect += 1
+                
+                if(sublistIsInListWithCorrectOrder(expectedOutputValues,response)):
+                    problemsCorrect += 1
+                    if (not expectedOutputString in outputStr):
+                        hadCorrectValuesButIncorrectlyFormattedString = True
                 else:
                     #if not correct, prints the error
                     myPrint("Looking for: {!s}, {!s} and {!s}".format(seed_values[i][1], seed_values[i][2], seed_values[i][3]), file=sys.stderr)
-                    myPrint("Received: {!s}, {!s} and {!s}, check for spelling errors!".format(response[0], response[1], response[2]), file=sys.stderr)
+                    myPrint("Received: {!s}, check for spelling errors!".format(response), file=sys.stderr)
             else:
                 myPrint("Did not retrieve enough values from output")
         if problemsCorrect == seed_count:
-            myPrint("Problem 2 correct!", file=sys.stderr)
+            if (hadCorrectValuesButIncorrectlyFormattedString):
+                myPrint("Problem 2 had correct values, but the format of the string was incorrect")
+                deductions.append((-5,"Problem 2 had correct values, but was formatted incorrectly"))
+            else:
+                myPrint("Problem 2 correct!", file=sys.stderr)
         elif i == (seed_count-1):
             myPrint("Problem 2 INCORRECT", file=sys.stderr)
             deductions.append(((-100/3)*((seed_count - problemsCorrect)/seed_count), str(seed_count-problemsCorrect) + " out of " + str(seed_count) + " of the inputs for problem 2 did not produce the correct output."))
@@ -242,9 +273,18 @@ def gradeProblemThree(problem3Filename):
         
         outputStr = output.decode()
         response = getAllNumbersFromString(outputStr)
+        
+        
+        
+        expectedOutputString1 = "The population will be " + str(expectedNewPopulation1) + " people"
+        expectedOutputString2 = "The population will be " + str(expectedNewPopulation2) + " people"
         if (len(response) > 0):        
             if (response[0] in (expectedNewPopulation1,expectedNewPopulation2)):
-                myPrint("Problem 3 correct!", file=sys.stderr)
+                if (expectedOutputString1 in outputStr or expectedOutputString2 in outputStr):
+                    myPrint("Problem 3 correct!", file=sys.stderr)    
+                else:
+                    myPrint("Problem 3 had correct values, but incorrectly formatted output")
+                    deductions.append((-5,"Problem 3 had correct values, but incorrectly formatted output"))
             else:
                 #if not correct, prints the error
                 myPrint("Problem 3 INCORRECT", file=sys.stderr)
