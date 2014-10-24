@@ -39,7 +39,7 @@ def getAllNumbersFromString(stringToParse):
             None
     return listOfNumbers
 
-def fileNameIsCFileAndRoughlyMatchesName(textToLookFor,fileName):
+def fileNameHasAcceptableExtensionAndRoughlyMatchesName(textToLookFor,fileName):
     if (len(fileName) < len(textToLookFor)):
         return False
     containsText = textToLookFor.lower() in fileName.lower()
@@ -57,15 +57,15 @@ def findHomeworkFiles(folderNameContainingSubmission):
     problem3Name = "Hw6Problem3.cpp"
     
     for file in files:
-        if fileNameIsCFileAndRoughlyMatchesName("problem1",file):
+        if fileNameHasAcceptableExtensionAndRoughlyMatchesName("problem1",file):
             hwFileNameDictionary["problem1"] = '"' + folderNameContainingSubmission + "/" +file +'"'
             if (file != problem1Name):
                 deductions.append((-5, problem1Name+ " had the wrong name ('"+file +"')"))
-        elif fileNameIsCFileAndRoughlyMatchesName("problem2",file):
+        elif fileNameHasAcceptableExtensionAndRoughlyMatchesName("problem2",file):
             hwFileNameDictionary["problem2"] = '"' + folderNameContainingSubmission + "/" +file+ '"'
             if (file != problem2Name):
                 deductions.append((-5,problem2Name+ " had the wrong name ('"+file +"')"))
-        elif fileNameIsCFileAndRoughlyMatchesName("problem3",file):
+        elif fileNameHasAcceptableExtensionAndRoughlyMatchesName("problem3",file):
             hwFileNameDictionary["problem3"] = '"' + folderNameContainingSubmission + "/" +file+ '"'
             if (file != problem3Name):
                 deductions.append((-5,problem3Name+ " had the wrong name ('"+file +"')"))
