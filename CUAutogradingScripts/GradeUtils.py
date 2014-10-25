@@ -1,8 +1,7 @@
 import re
 from pypeg2 import * #parser
-
-#Define 
-
+import pypeg2
+import CppHeaderParser #sudo pip3 install cppheaderparser, also: sudo pip3 install install ply
 
 def getAllNumbersFromString(stringToParse):
     listOfNumbersAsStrings = re.findall("([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)",stringToParse)
@@ -22,9 +21,19 @@ def getAllNumbersFromString(stringToParse):
 def CppFunctionFinder (cppSourceFileName):
     with open (cppSourceFileName, "r") as myfile:
         data=myfile.read()
+        
+    try:
+        cppHeader = CppHeaderParser.CppHeader(cppSourceFileName)
+    except CppHeaderParser.CppParseError as e:
+        print(e)
+        sys.exit(1)
+
+    numFunctions = len(cppHeader.functions)
+    print('Number of functions :', numFunctions)
     
-    #logic:
-    # find 'int','void' 'float',     
-    listOfNumbersAsStrings = re.findall("([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)",data)
+    nameFunctions = []
+    for i in range(0, len(cppHeader.functions)):
+        nameFunctions.append(cppHeader.functions[i]['name'])
     
-    print (listOfNumbersAsStrings)
+    print('The names of the functions: ', nameFunctions) 
+
