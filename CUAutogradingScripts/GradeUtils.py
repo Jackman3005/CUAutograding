@@ -6,24 +6,6 @@ import CppHeaderParser #sudo pip3 install cppheaderparser, also: sudo pip3 insta
 import os
 import sys
 
-# Find out the file location within the sources tree
-this_module_dir_path = os.path.abspath(
-    os.path.dirname(sys.modules[__name__].__file__))
-# Find out gccxml location
-gccxml_09_path = os.path.join(
-    this_module_dir_path, '..', '..', '..',
-    'gccxml_bin', 'v09', sys.platform, 'bin')
-# Add pygccxml package to Python path
-sys.path.append(os.path.join(this_module_dir_path, '..', '..'))
-
-from pygccxml import parser #sudo pip3 install pygccxml and sudo apt-get install gccxml
-from pygccxml import declarations
-
-# Configure GCC-XML parser
-config = parser.gccxml_configuration_t(
-    gccxml_path=gccxml_09_path,working_directory= this_module_dir_path,cflags = '-std=c++11 -Wall', compiler='g++',ignore_gccxml_output = True)
-
-decls = parser.parse([this_module_dir_path + '/example.hpp'])
 
 def funCppHeaderParser(cppSourceFileName):
     with open (cppSourceFileName, "r") as myfile:
@@ -53,33 +35,80 @@ def getAllNumbersFromString(stringToParse):
             None
     return listOfNumbers
     
-def CppFunctionFinder (cppSourceFileName, full = False):
+def CppFunctionFinder (cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
 
-    nameFunctions = []
+    Functions = []
     for i in range(0, len(cppHeader.functions)):
-        nameFunctions.append(cppHeader.functions[i]['name'])
-    
-    if not full:
-        return nameFunctions
-    else:
-        return cppHeader.functions
+        fn = Function(cppHeader.functions[i])
+        Functions.append(fn)
+        
+    return Functions
 
-def cppClassFinder(cppSourceFileName,full = False):
+def cppClassFinder(cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
 
     nameClasses = []
     for i in cppHeader.classes.keys():
-        nameClasses.append(cppHeader.classes[i]['name'])
-    
-    if not full:
-        return nameClasses
-    else:
-        return cppHeader.classes
+        nameClasses.append(Classes(i,cppHeader.classes[i]))
+        
+    return nameClasses
 
 def cppParser(cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
     
     return cppHeader
+
+def gccxmlstuff():
     
+    # Find out the file location within the sources tree
+    this_module_dir_path = os.path.abspath(
+        os.path.dirname(sys.modules[__name__].__file__))
+    # Find out gccxml location
+    gccxml_09_path = os.path.join(
+        this_module_dir_path, '..', '..', '..',
+        'gccxml_bin', 'v09', sys.platform, 'bin')
+    # Add pygccxml package to Python path
+    sys.path.append(os.path.join(this_module_dir_path, '..', '..'))
     
+    from pygccxml import parser #sudo pip3 install pygccxml and sudo apt-get install gccxml, sudo apt-get install g++-multilib
+    from pygccxml import declarations
+    
+    # Configure GCC-XML parser
+    config = parser.gccxml_configuration_t(
+        gccxml_path=gccxml_09_path,cflags = '',compiler='g++')
+    
+    decls = parser.parse([this_module_dir_path + '/Lab9.cpp'],config)  
+    
+class Function:
+    def __init__(self,FDict):
+        self._functionInfo = FDict
+                
+    def getName(self):
+        return self._functionInfo['name']
+    
+    def getReturnType(self):
+        return self._functionInfo['rtnType']
+    
+    def getParameters(self):
+        paramList = []
+        for x in self._functionInfo['parameters']:
+            paramList.append(Parameter(x))
+            
+        return paramList
+class Parameter:
+    def __init__(self,PDict):
+        self._parameterInfo = PDict
+                
+    def getName(self):
+        return self._parameterInfo['name']
+    
+    def getType(self):
+        return self._parameterInfo['type']
+
+class Classes:
+    def __init__(self,CName,CDict):
+        self._classInfo = CDict
+        self._className = CName       
+    def getName(self):
+        return self._className
