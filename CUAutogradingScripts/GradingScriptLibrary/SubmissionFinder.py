@@ -29,5 +29,5 @@ class SubmissionFinder:
             return False
                 
         except Exception as e:
-            print ("Error when looking or submission...\n",e.strerror)
+            print ("Error when looking for submission file...\n",e.strerror)
             return False

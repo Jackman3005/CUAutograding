@@ -311,6 +311,7 @@ def gradeSubmission(folderContainingSubmission,folderContainingScripts):
     
 if __name__ == "__main__":
     submissionFolder = sys.argv[1]
-    grade,comments = gradeSubmission(submissionFolder)
+    folderContainingScripts = sys.argv[2]
+    grade,comments = gradeSubmission(submissionFolder,folderContainingScripts)
     
     print(grade)
