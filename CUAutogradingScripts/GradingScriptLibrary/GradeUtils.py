@@ -47,7 +47,7 @@ def CppFunctionFinder (cppSourceFileName):
     for i in range(0, len(cppHeader.functions)):
         fn = Function(cppHeader.functions[i])
         Functions.append(fn)
-        
+    
     return Functions
 
 def cppClassFinder(cppSourceFileName):

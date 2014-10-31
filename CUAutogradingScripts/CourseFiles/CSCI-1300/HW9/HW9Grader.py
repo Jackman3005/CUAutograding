@@ -38,10 +38,58 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     
     compiledFileName = "/tmp/hw9"
-    successfullyCompiled = CPPCompiler.compileCPPFile(folderNameContainingSubmission + "/" + submissionFileName, compiledFileName, "Crypto")
+    locationOfStudentSourceCode = folderNameContainingSubmission + "/" + submissionFileName
+    successfullyCompiled = CPPCompiler.compileCPPFile(locationOfStudentSourceCode, compiledFileName, "Crypto")
     if (not successfullyCompiled):
         deductions.append((-100,"Submission did not compile!"))
         return deductions
+    
+    
+    #Check for correct functions
+    functions = GradeUtils.CppFunctionFinder(locationOfStudentSourceCode)
+    
+    
+    requiredFunctions = {}
+    requiredFunctions["readFile"] = {"params":["string"],"returns":"string"}
+    requiredFunctions["encryptChar"] = {"params":["char","int"],"returns":"char"}
+    requiredFunctions["decryptChar"] = {"params":["char","int"],"returns":"char"}
+    requiredFunctions["encryptMessage"] = {"params":["string","int"],"returns":"string"}
+    requiredFunctions["decryptMessage"] = {"params":["string","int"],"returns":"string"}
+    requiredFunctions["writeToFile"] = {"params":["string","string","string"],"returns":"void"}
+    requiredFunctions["main"] = {}
+    for function in functions:
+        if (function.getName() in requiredFunctions):
+            hadCorrectParameters = True
+            hadCorrectReturnType = True
+            requiredFunction = requiredFunctions[function.getName()]
+            if ("params" in requiredFunction):
+                studentParameters = function.getParameters()
+                expectedParameters = requiredFunction["params"]
+                if(len(studentParameters) != len(expectedParameters)):
+                    hadCorrectParameters = False
+                else:
+                    for i in range(len(studentParameters)):
+                        if (studentParameters[i].getType() != expectedParameters[i]):
+                            hadCorrectParameters = False
+            if ("returns" in requiredFunction):
+                hadCorrectReturnType = function.getReturnType() == requiredFunction["returns"] 
+            del requiredFunctions[function.getName()]
+            
+            comment = "The \"" + function.getName() + "\" function was incorrectly defined\n"
+            if (not hadCorrectParameters):
+                comment += "Expected " + str(len(requiredFunction['params'])) + " parameters of type " + ", ".join(requiredFunction['params']) + "\n"
+                comment += "Received " + str(len(function.getParameters())) + " parameters of type " + ", ".join([x.getType() for x in function.getParameters()])  + "\n"
+            if (not hadCorrectReturnType):
+                comment += "Expected return type of " + requiredFunction['returns'] + "\n"
+                comment += "Received return type of " + function.getReturnType() + "\n"
+            
+            if (not hadCorrectParameters or not hadCorrectReturnType):
+                deductions.append((-10, comment))
+    
+    
+    for missingFunction in requiredFunctions.keys():
+        deductions.append((-10, "Function \"" + missingFunction + "\" was missing from your source code file."))
+        
         
     seedLoader = SeedFileLoader()
     seeds = seedLoader.loadSeedsFromFile(folderContainingScripts + "/HW9Seeds.txt")
@@ -62,28 +110,58 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         with open(seed.commandLineInputs()[2],"r") as seededInputFile:
             contentsOfSeedFile = seededInputFile.read()
         
-        expectedOutput = seed.expectedOutputs()[0]
+        expectedEncodedOrDecodedOutput = seed.expectedOutputs()[0]
         userOutput = output.lstrip().rstrip()
-        print("OUTPUT: " +output)
         
-        if (expectedOutput not in userOutput):
-            deductions.append((-100/len(seeds),"Console output was incorrect. The provided file had the string \"" + contentsOfSeedFile + "\" the expected output was \"" + expectedOutput + "\" what was actually received was \"" +userOutput + "\""  ))
-            
-        
+        expectedExactConsoleOutputLine1 = ""
         if ('e' in seed.commandLineInputs()[0].lower()):
             extension = ".enc"
+            expectedExactConsoleOutputLine1 += "Encrypting file: " + seed.commandLineInputs()[2]
         else:
             extension = ".dec"
+            expectedExactConsoleOutputLine1 += "Decrypting file: " + seed.commandLineInputs()[2]
+        
+        expectedExactConsoleOutputLine2 = contentsOfSeedFile
+        expectedExactConsoleOutputLine3 = expectedEncodedOrDecodedOutput
+        
+        
+        
+        
+        
+        #Make sure they have all three lines of correct output P.S. Gnarly ass string
+        if (expectedExactConsoleOutputLine1 not in userOutput or expectedExactConsoleOutputLine2 not in userOutput or expectedExactConsoleOutputLine3 not in userOutput):
+            deductions.append((-100/len(seeds),"Console output was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
+                                               "-------------------------------------------------------\n" +
+                                               "The provided file contained the text:\n" + 
+                                               contentsOfSeedFile + "\n\n" +
+                                               "The expected output was: \n" + 
+                                               expectedExactConsoleOutputLine1 + "\n" + 
+                                               expectedExactConsoleOutputLine2 +"\n" + 
+                                               expectedExactConsoleOutputLine3  + "\n\n" +
+                                               "What was actually received was:\n" +
+                                               userOutput + "\n" +
+                                               "-------------------------------------------------------\n"  ))
+            continue;
+        
+        
         userOutputFileName = seed.commandLineInputs()[2] + extension
-        print ("Expected user output file name: " + userOutputFileName)
+        
         try:
             
             userOutputFile = open(userOutputFileName,"r")
             contentsOfFile = userOutputFile.read()
             userOutputFile.close()
             
-            if (contentsOfFile.lstrip().rstrip() != expectedOutput):
-                deductions.append((-100/len(seeds),"Output file was incorrect. The provided file had the string \"" + contentsOfSeedFile + "\" the expected output was \"" + expectedOutput + "\" what was actually received was \"" +contentsOfFile + "\""  ))
+            if (contentsOfFile.lstrip().rstrip() != expectedEncodedOrDecodedOutput):
+                deductions.append((-100/len(seeds),"Output file was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
+                                                   "-------------------------------------------------------\n" +
+                                                   "The provided file contained the text:\n" + 
+                                                   contentsOfSeedFile + "\n\n" +
+                                                   "The expected output was: \n" + 
+                                                   expectedEncodedOrDecodedOutput  + "\n\n" +
+                                                   "What was actually received was:\n" +
+                                                   contentsOfFile + "\n" +
+                                                   "-------------------------------------------------------\n"  ))
         except Exception as e:
             print (e.strerror)
             studentFeedback("There was an issue reading your output file!!", "Expected to find an output file of name \"" + os.path.split(userOutputFileName)[1] + "\"")             
@@ -97,7 +175,7 @@ def deductionsToGradeAndComments(deductions):
     comments = ""    
     for gradeDeduction, comment in deductions:
         grade += gradeDeduction
-        comments += ("[%.1f] " % gradeDeduction) + comment + ", "
+        comments += ("\n[%.1f] " % gradeDeduction) + comment + ", "
     if (len(deductions)==0):
         comments = "Great work!"
     else:
@@ -109,7 +187,7 @@ def deductionsToGradeAndComments(deductions):
 if __name__ == "__main__":
     submissionFolder = sys.argv[1]
     folderContainingScripts = sys.argv[2]
-    deductions = gradeSubmission(submissionFolder,folderContainingScripts)
+    deductions = gradeSubmission(submissionFolder,folderContainingScripts + "/CourseFiles/CSCI-1300/HW9")
     
     grade, comments = deductionsToGradeAndComments(deductions)
     
