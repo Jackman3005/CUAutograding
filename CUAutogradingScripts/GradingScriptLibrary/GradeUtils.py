@@ -13,8 +13,8 @@ def studentFeedback(*strToPrint):
         print (*strToPrint,file=sys.stderr)
 
 def funCppHeaderParser(cppSourceFileName):
-    with open (cppSourceFileName, "r") as myfile:
-        data=myfile.read()
+    #with open (cppSourceFileName, "r") as myfile:
+        #data=myfile.read()
         
     try:
         cppHeader = CppHeaderParser.CppHeader(cppSourceFileName)
