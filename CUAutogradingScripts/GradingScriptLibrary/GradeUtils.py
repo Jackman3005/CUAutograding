@@ -22,7 +22,6 @@ def funCppHeaderParser(cppSourceFileName):
     except CppHeaderParser.CppParseError as e:
         print(e)
         exit(1)
-        
     return cppHeader
 
 def getAllNumbersFromString(stringToParse):

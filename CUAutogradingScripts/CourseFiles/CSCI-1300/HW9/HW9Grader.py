@@ -37,7 +37,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     
     
-    compiledFileName = "/tmp/hw9"
+    compiledFileName = folderNameContainingSubmission + "/hw9"
     locationOfStudentSourceCode = folderNameContainingSubmission + "/" + submissionFileName
     successfullyCompiled = CPPCompiler.compileCPPFile(locationOfStudentSourceCode, compiledFileName, "Crypto")
     if (not successfullyCompiled):
@@ -96,9 +96,9 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     for seed in seeds:
         
-        #copy the input file to the tmp directory so user can read from it and then write a new file to the same directory
-        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[2], "/tmp/" + seed.commandLineInputs()[2])
-        seed.commandLineInputs()[2] ="/tmp/" + seed.commandLineInputs()[2]
+        #copy the input file to the student submission directory so user can read from it and then write a new file to the same directory
+        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[2], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[2])
+        seed.commandLineInputs()[2] =folderNameContainingSubmission + "/" +  seed.commandLineInputs()[2]
         
         
         programRunner = CPPProgramRunner()
