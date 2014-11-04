@@ -16,22 +16,22 @@ class CPPProgramRunner:
             fileName = "./" + fileName
         
         try:
-            commandLineArgsToPass = [fileName]
+            commandLineArgsToPass = [fileName ]
             if (len(commandLineArguments) > 0):
                 commandLineArgsToPass.extend(commandLineArguments)
                 
             #Two different ways to run the program. If there are no console inputs then the first way does not seem to work.
             if (len(consoleInputs)>0):
-                process = subprocess.Popen(commandLineArgsToPass,stdout=subprocess.PIPE, stdin=subprocess.PIPE,shell=True)
+                process = subprocess.Popen(commandLineArgsToPass,stdout=subprocess.PIPE, stdin=subprocess.PIPE,stderr=sys.stderr,shell=True)
                 out,err = process.communicate(("\n".join(consoleInputs)).encode(),timeout=self._timeout)
                 return (True,out.decode())
             else:
-                output = subprocess.check_output(commandLineArgsToPass,timeout=self._timeout)
+                output = subprocess.check_output(commandLineArgsToPass,timeout=self._timeout,stderr=sys.stderr)
                 return (True,output.decode())
         except subprocess.CalledProcessError as err:
             print("Error running submission: {!s}".format(err), file=sys.stderr)
             return (False,"Runtime Error occurred when running " + fileName)
         except subprocess.TimeoutExpired:
-            errMessage = fileName + " took longer than "+self._timeout+" seconds to run. Most likely an infinite loop or an unexpected prompt for input!"
+            errMessage = fileName + " took longer than "+str(self._timeout)+" seconds to run. Most likely an infinite loop or an unexpected prompt for input!"
             print (errMessage,file=sys.stderr)
             return (False, errMessage)

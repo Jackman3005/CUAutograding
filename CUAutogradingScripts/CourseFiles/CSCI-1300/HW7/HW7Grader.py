@@ -37,8 +37,9 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     
     
-    compiledFileName = folderNameContainingSubmission + "/hw7"
+    compiledFileName = folderNameContainingSubmission + "/dna"
     locationOfStudentSourceCode = folderNameContainingSubmission + "/" + submissionFileName
+    
     successfullyCompiled = CPPCompiler.compileCPPFile(locationOfStudentSourceCode, compiledFileName, "DNA")
     if (not successfullyCompiled):
         deductions.append((-100,"Submission did not compile!"))
@@ -58,36 +59,49 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     for seed in seeds:
         
+        for i in range(0,len(seed.commandLineInputs())):
+            source = folderContainingScripts + "/" + seed.commandLineInputs()[i]
+            seed.commandLineInputs()[i] = source
+        
+        
         programRunner = CPPProgramRunner()
         successfullyRan,output = programRunner.run(compiledFileName, seed.commandLineInputs(), seed.consoleInputs())
         if (not successfullyRan):
             deductions.append((-100,output))
             return deductions
         
-        expectedHumanPercentage = seed.expectedOutputs()[0]
-        expectedMousePercentage = seed.expectedOutputs()[1]
-        expected = seed.expectedOutputs()[2]
+        #print (output)
+        
+        expectedMousePercentage = seed.expectedOutputs()[0]
+        expectedHumanPercentage = seed.expectedOutputs()[1]
+        expectedAnswer = seed.expectedOutputs()[2]
+        userOutputNumbers = GradeUtils.getAllNumbersFromString(output)
         
         
-        
-        #Make sure they have all three lines of correct output P.S. Gnarly ass string
-        if (expectedExactConsoleOutputLine1 not in userOutput or expectedExactConsoleOutputLine2 not in userOutput or expectedExactConsoleOutputLine3 not in userOutput):
-            deductions.append((-100/len(seeds),"Console output was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
-                                               "-------------------------------------------------------\n" +
-                                               "The provided file contained the text:\n" + 
-                                               contentsOfSeedFile + "\n\n" +
-                                               "The expected output was: \n" + 
-                                               expectedExactConsoleOutputLine1 + "\n" + 
-                                               expectedExactConsoleOutputLine2 +"\n" + 
-                                               expectedExactConsoleOutputLine3  + "\n\n" +
-                                               "What was actually received was:\n" +
-                                               userOutput + "\n" +
-                                               "-------------------------------------------------------\n"  ))
-            continue;
+        tolerance = .00001
+        outputLines = output.splitlines();
         
         
-       
+        hadIncorrectOutput = False
+        comment = ""
+        if (len(userOutputNumbers)>1):
             
+            if (abs(userOutputNumbers[0] - expectedMousePercentage) > tolerance):
+                hadIncorrectOutput = True
+                comment+= " Expected Mouse Percentage was: " + str(expectedMousePercentage) + ", received: " + str(userOutputNumbers[0]) + " "
+            if (abs(userOutputNumbers[1] - expectedHumanPercentage) > tolerance):
+                hadIncorrectOutput = True
+                comment+= "Expected Human Percentage was: " + str(expectedHumanPercentage) + ", received: " + str(userOutputNumbers[1]) + " "
+            
+            if (outputLines[len(outputLines)-1].strip() != expectedAnswer):
+                hadIncorrectOutput = True
+                comment+= " Expected answer to be: "+ expectedAnswer + ", received: " +  outputLines[len(outputLines)-1].strip()
+        else:
+            hadIncorrectOutput = True
+            comment = "Could not find the human and mouse percentages!"
+        if (hadIncorrectOutput):
+            deductions.append((-100/len(seeds), comment))
+       
     
     return deductions
 

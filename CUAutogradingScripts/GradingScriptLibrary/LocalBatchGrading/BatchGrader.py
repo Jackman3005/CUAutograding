@@ -12,6 +12,21 @@ from GradingScriptLibrary.LocalBatchGrading import Extraction
 from GradingScriptLibrary.LocalBatchGrading import StudentGradingDictionary
 from GradingScriptLibrary.LocalBatchGrading import StudentCSV
 
+def deductionsToGradeAndComments(deductions):
+    grade = 100
+    comments = ""    
+    for gradeDeduction, comment in deductions:
+        grade += gradeDeduction
+        comments += ("\n[%.1f] " % gradeDeduction) + comment + ", "
+    if (len(deductions)==0):
+        comments = "Great work!"
+    else:
+        comments = comments.rstrip(", ")
+    grade = max(round(grade),0)
+    
+    return (grade,comments)
+
+
 try:
     configFileLocation = sys.argv[1]
     config = configparser.ConfigParser()
@@ -47,12 +62,14 @@ else:
     numOfStudents = len(studentIdKeys)
     studentCount = 1
     for studentId in studentIdKeys:
-        if (studentCount >= 30):
-            break
+        #if (studentCount >= 30):
+            #break
         print("Grading student " + str(studentCount) + "/" + str(numOfStudents) + " " + Students[studentId]["FN"] + " " + Students[studentId]["LN"])
         
         if (Students[studentId]['Directory'] != None):
-            Students[studentId]['Grade'], Students[studentId]['Comments'] = autogradingScript.gradeSubmission(zipFilesFolderLocation + "/" + Students[studentId]['Directory'],gradingScriptFolder)
+            deductions = autogradingScript.gradeSubmission(zipFilesFolderLocation + "/" + Students[studentId]['Directory'],gradingScriptFolder)
+            Students[studentId]['Grade'], Students[studentId]['Comments'] =deductionsToGradeAndComments(deductions)
+            print("\nSuccessfuly Graded student: " +Students[studentId]["FN"] + " " + Students[studentId]["LN"] + "\tGrade: " + str( Students[studentId]['Grade']) + "\tComments: " + Students[studentId]['Comments'] + "\n\n\n\n",file=sys.stderr)
         else:
             Students[studentId]['Grade'], Students[studentId]['Comments'] = (0,"[-100] Could not find a valid submission")
         studentCount +=1
