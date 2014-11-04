@@ -3,7 +3,7 @@ import sys
 
 def compileCPPFile(sourceFileName,outputFileName,displayName):
     try:
-        print("--------------Compiling " + displayName + "--------------",file=sys.stderr)
+        print("--------------Compiling " + displayName + " source code--------------",file=sys.stderr)
         subprocess.check_call("g++ "+sourceFileName+" -std=c++11 -o " + outputFileName,shell=True) 
         return True
     except Exception:
