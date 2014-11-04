@@ -1,4 +1,4 @@
 "mouseCompare1.txt" "humanCompare1.txt" "unknown1.txt"; ; "MouseCompare = 0.571429" "HumanCompare = 0.571429" "identity cannot be determined"
 "mouseCompare2.txt" "humanCompare2.txt" "unknown2.txt"; ; "MouseCompare = 0.5" "HumanCompare = 0.333333" "mouse"
-"mouseCompare3.txt" "humanCompare3.txt" "unknown3.txt"; ; "MouseCompare = 0.333333" "HumanCompare = 0.166667" "mouse"
+"mouseCompare3.txt" "humanCompare3.txt" "unknown3.txt"; ; "MouseCompare = 0.333333" "HumanCompare = 0" "mouse"
 "mouseCompare4.txt" "humanCompare4.txt" "unknown4.txt"; ; "MouseCompare = 0.432432" "HumanCompare = 0.567568" "human"
