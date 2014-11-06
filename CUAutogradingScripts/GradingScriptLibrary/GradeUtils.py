@@ -6,6 +6,7 @@ import CppHeaderParser #sudo pip3 install cppheaderparser, also: sudo pip3 insta
 import os
 import sys
 
+
 shouldPrint =True
 
 def studentFeedback(*strToPrint):
@@ -20,8 +21,8 @@ def funCppHeaderParser(cppSourceFileName):
         cppHeader = CppHeaderParser.CppHeader(cppSourceFileName)
         
     except CppHeaderParser.CppParseError as e:
-        print(e)
-        exit(1)
+        studentFeedback ("There was a problem parsing the \""+cppSourceFileName + "\" C++ source code file for functions! See Error Below:\n",e)
+        
     return cppHeader
 
 def getAllNumbersFromString(stringToParse):
@@ -38,6 +39,28 @@ def getAllNumbersFromString(stringToParse):
         except ValueError:
             None
     return listOfNumbers
+
+#This function will leniently look for words within a string. The words must be in the order
+#that they are expected. The words may be mispelled or have the wrong case and it will still be
+#counted as acceptable. Also if there are extra words in between the expected words they are essentially
+#ignored. As long as all of the expected words are found in order within the text then this will return true
+#In order to install the "enchant" module run "sudo pip3 install enchant"
+def stringContainsCorrectWords_WillHandleMispellings(expectedText,studentOutput):
+    import enchant
+    d = enchant.Dict("en_us")
+    expectedWords = expectedText.strip().lower().split()
+    actualWords = studentOutput.strip().lower().split()
+    wordsCorrect = 0
+    for wordToCheck in actualWords:
+        if (wordToCheck == expectedWords[wordsCorrect]):
+            wordsCorrect += 1
+        else:
+            possibleCorrectSpellings = d.suggest(wordToCheck)
+            if (expectedWords[wordsCorrect] in possibleCorrectSpellings):
+                wordsCorrect += 1
+    return wordsCorrect == len(expectedWords)
+            
+    
     
 def CppFunctionFinder (cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
@@ -62,7 +85,7 @@ def cppParser(cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
     
     return cppHeader
-
+'''
 def gccxmlstuff():
     
     # Find out the file location within the sources tree
@@ -83,7 +106,7 @@ def gccxmlstuff():
         gccxml_path=gccxml_09_path,cflags = '',compiler='g++')
     
     decls = parser.parse([this_module_dir_path + '/Lab9.cpp'],config)  
-    
+'''  
 class Function:
     def __init__(self,FDict):
         self._functionInfo = FDict

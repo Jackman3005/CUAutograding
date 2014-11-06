@@ -29,9 +29,11 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "dna")
     if (not submissionFileName):
-        deductions.append((-100,"Could not find a file to run! Make sure you are using the correct file name and you are submitting the .cpp source code file"))
-        return deductions
-    elif(submissionFileName != "DNA.cpp"):
+        submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "7")
+        if not (submissionFileName):
+            deductions.append((-100,"Could not find a file to run! Make sure you are using the correct file name and you are submitting the .cpp source code file"))
+            return deductions
+    if(submissionFileName != "DNA.cpp"):
         deductions.append((-10,"Incorrect file name! Expected \"DNA.cpp\" but was \"" + submissionFileName +"\""))
     
     
@@ -70,7 +72,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
             deductions.append((-100,output))
             return deductions
         
-        #print (output)
+        
         
         expectedMousePercentage = seed.expectedOutputs()[0]
         expectedHumanPercentage = seed.expectedOutputs()[1]
@@ -93,12 +95,14 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                 hadIncorrectOutput = True
                 comment+= "Expected Human Percentage was: " + str(expectedHumanPercentage) + ", received: " + str(userOutputNumbers[1]) + " "
             
-            if (outputLines[len(outputLines)-1].strip() != expectedAnswer):
+            cleanedStudentAnswer = re.sub("\s+"," ", outputLines[len(outputLines)-1].strip())
+            jackIsVeryLenientStudentAnswer = re.sub("can not", "cannot",cleanedStudentAnswer)
+            if (not GradeUtils.stringContainsCorrectWords_WillHandleMispellings(expectedAnswer,jackIsVeryLenientStudentAnswer)):
                 hadIncorrectOutput = True
-                comment+= " Expected answer to be: "+ expectedAnswer + ", received: " +  outputLines[len(outputLines)-1].strip()
+                comment+= " Expected answer to be: "+ expectedAnswer + ", received: " +  cleanedStudentAnswer
         else:
             hadIncorrectOutput = True
-            comment = "Could not find the human and mouse percentages!"
+            comment = "Could not find the human and/or mouse percentages!"
         if (hadIncorrectOutput):
             deductions.append((-100/len(seeds), comment))
        
@@ -110,7 +114,7 @@ def deductionsToGradeAndComments(deductions):
     comments = ""    
     for gradeDeduction, comment in deductions:
         grade += gradeDeduction
-        comments += ("\n[%.1f] " % gradeDeduction) + comment + ", "
+        comments += ("\n[%.1f] " % gradeDeduction) + comment + " "
     if (len(deductions)==0):
         comments = "Great work!"
     else:

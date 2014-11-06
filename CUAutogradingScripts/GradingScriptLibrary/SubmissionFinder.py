@@ -15,7 +15,6 @@ class SubmissionFinder:
                 hasCorrectExtension = True
                 break
         
-        
         isNotHiddenOrBackupFile = fileName[0] != '.' and fileName[0] != '~'
         
         return containsText and hasCorrectExtension and isNotHiddenOrBackupFile
@@ -29,5 +28,5 @@ class SubmissionFinder:
             return False
                 
         except Exception as e:
-            print ("Error when looking for submission file...\n",e.strerror)
+            print ("Error when looking for submission file...\n",e.strerror,file=sys.stderr)
             return False

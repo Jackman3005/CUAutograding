@@ -10,7 +10,7 @@ class SeedFileLoader:
         try:
             seedFile = open(fileName, "r")
         except Exception as e:
-            print ("Exception was thrown when trying to open seed file: ", seedFile,"Error:\n",e.strerror)
+            print ("Exception was thrown when trying to open seed file: ", seedFile,"Error:\n",e.strerror,file=sys.stderr)
             sys.exit(1)
         else:
             seeds = []
@@ -48,10 +48,10 @@ class SeedFileLoader:
     
     
     def printSeedFileError(self,fileName):
-        print ("Could not find CLA, Console Inputs, or Expected outputs for seed file:",fileName)
-        print ("Expected to see seed file in the following format:\n")
-        print ("CLA1 CLA2 CLA3..."+self.separator +" ConsoleIn1 ConsoleIn2 ConsoleIn3..."+self.separator +" ExpectedOut1 ExpectedOut2...")
-        print ("You must put the '" + self.separator + "' separator in even if there are no inputs of that type")
+        print ("Could not find CLA, Console Inputs, or Expected outputs for seed file:",fileName,file=sys.stderr)
+        print ("Expected to see seed file in the following format:\n",file=sys.stderr)
+        print ("CLA1 CLA2 CLA3..."+self.separator +" ConsoleIn1 ConsoleIn2 ConsoleIn3..."+self.separator +" ExpectedOut1 ExpectedOut2...",file=sys.stderr)
+        print ("You must put the '" + self.separator + "' separator in even if there are no inputs of that type",file=sys.stderr)
             
 
 class Seed:

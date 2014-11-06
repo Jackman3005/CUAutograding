@@ -163,8 +163,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                                                    contentsOfFile + "\n" +
                                                    "-------------------------------------------------------\n"  ))
         except Exception as e:
-            print (e.strerror)
-            studentFeedback("There was an issue reading your output file!!", "Expected to find an output file of name \"" + os.path.split(userOutputFileName)[1] + "\"")             
+            studentFeedback("There was an issue reading your output file!!", "Expected to find an output file of name \"" + os.path.split(userOutputFileName)[1] + "\"\n",e)             
             
             
     
@@ -185,6 +184,10 @@ def deductionsToGradeAndComments(deductions):
     return (grade,comments)
 
 if __name__ == "__main__":
+    #Assign all output to the stderr stream as a catch all
+    stdoutStream = sys.stdout
+    sys.stdout = sys.stderr
+    
     submissionFolder = sys.argv[1]
     folderContainingScripts = sys.argv[2]
     deductions = gradeSubmission(submissionFolder,folderContainingScripts + "/CourseFiles/CSCI-1300/HW9")
@@ -193,4 +196,6 @@ if __name__ == "__main__":
     
     studentFeedback(comments)
     
+    #Return the Stdout to stdoutstream so that the grade can be printed.
+    sys.stdout = stdoutStream
     print(max(grade,0))
