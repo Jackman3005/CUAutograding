@@ -49,10 +49,11 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     
     #Check for correct functions
-    functions = GradeUtils.CppFunctionFinder(locationOfStudentSourceCode)
-    nonMainFunctions = [x for x in functions if x.getName() != "main"]
-    if (len(nonMainFunctions) > 0):
-        deductions.append((-40,"Used additional functions besides main, this was not allowed."))
+    successful, functions = GradeUtils.CppFunctionFinder(locationOfStudentSourceCode)
+    if (successful):
+        nonMainFunctions = [x for x in functions if x.getName() != "main"]
+        if (len(nonMainFunctions) > 0):
+            deductions.append((-40,"Used additional functions besides main, this was not allowed."))
     
     
         
@@ -85,16 +86,22 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         
         
         hadIncorrectOutput = False
+        hadPoorlyFormattedOutput = False
         comment = ""
         if (len(userOutputNumbers)>1):
             
-            if (abs(userOutputNumbers[0] - expectedMousePercentage) > tolerance):
+            if ((abs(userOutputNumbers[0] - expectedMousePercentage) > tolerance) and (abs(userOutputNumbers[1] - expectedMousePercentage) > tolerance)):
                 hadIncorrectOutput = True
                 comment+= " Expected Mouse Percentage was: " + str(expectedMousePercentage) + ", received: " + str(userOutputNumbers[0]) + " "
-            if (abs(userOutputNumbers[1] - expectedHumanPercentage) > tolerance):
+            elif(abs(userOutputNumbers[0] - expectedMousePercentage) > tolerance):
+                hadPoorlyFormattedOutput = True
+                comment+= " Your output was formatted incorrectly. Expected first line to contain mouse percentage output, but it did not."
+            if ((abs(userOutputNumbers[1] - expectedHumanPercentage) > tolerance) and (abs(userOutputNumbers[0] - expectedHumanPercentage) > tolerance)):
                 hadIncorrectOutput = True
                 comment+= "Expected Human Percentage was: " + str(expectedHumanPercentage) + ", received: " + str(userOutputNumbers[1]) + " "
-            
+            elif(abs(userOutputNumbers[1] - expectedHumanPercentage) > tolerance):
+                hadPoorlyFormattedOutput = True
+                comment+= " Your output was formatted incorrectly. Expected second line to contain human percentage output, but it did not."
             cleanedStudentAnswer = re.sub("\s+"," ", outputLines[len(outputLines)-1].strip())
             jackIsVeryLenientStudentAnswer = re.sub("can not", "cannot",cleanedStudentAnswer)
             if (not GradeUtils.stringContainsCorrectWords_WillHandleMispellings(expectedAnswer,jackIsVeryLenientStudentAnswer)):
@@ -105,7 +112,8 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
             comment = "Could not find the human and/or mouse percentages!"
         if (hadIncorrectOutput):
             deductions.append((-100/len(seeds), comment))
-       
+        elif(hadPoorlyFormattedOutput):
+            deductions.append((-10,comment))
     
     return deductions
 
@@ -126,7 +134,7 @@ def deductionsToGradeAndComments(deductions):
 if __name__ == "__main__":
     submissionFolder = sys.argv[1]
     folderContainingScripts = sys.argv[2]
-    deductions = gradeSubmission(submissionFolder,folderContainingScripts + "/CourseFiles/CSCI-1300/HW9")
+    deductions = gradeSubmission(submissionFolder,folderContainingScripts + "/CourseFiles/CSCI-1300/HW7")
     
     grade, comments = deductionsToGradeAndComments(deductions)
     

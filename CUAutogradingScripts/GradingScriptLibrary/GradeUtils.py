@@ -19,11 +19,13 @@ def funCppHeaderParser(cppSourceFileName):
         
     try:
         cppHeader = CppHeaderParser.CppHeader(cppSourceFileName)
+        return cppHeader
         
     except CppHeaderParser.CppParseError as e:
         studentFeedback ("There was a problem parsing the \""+cppSourceFileName + "\" C++ source code file for functions! See Error Below:\n",e)
+        return None
         
-    return cppHeader
+    
 
 def getAllNumbersFromString(stringToParse):
     listOfNumbersAsStrings = re.findall("([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)",stringToParse)
@@ -59,18 +61,31 @@ def stringContainsCorrectWords_WillHandleMispellings(expectedText,studentOutput)
             if (expectedWords[wordsCorrect] in possibleCorrectSpellings):
                 wordsCorrect += 1
     return wordsCorrect == len(expectedWords)
-            
+ 
+ 
+#This next section is for removing non-printable characters from students strings.
+#This is really helpful because the strings will appear completely identical but will not
+#equal eachother when evaluated. So. we can remove all the nonprintable characters and then compare them.           
+import unicodedata, re
+control_chars = ''.join(map(chr, list(range(0,32)) + list(range(127,160))))
+
+control_char_re = re.compile('[%s]' % re.escape(control_chars))
+
+def remove_control_chars(s):
+    return control_char_re.sub('', s)
     
     
 def CppFunctionFinder (cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
 
-    Functions = []
-    for i in range(0, len(cppHeader.functions)):
-        fn = Function(cppHeader.functions[i])
-        Functions.append(fn)
-    
-    return Functions
+    if (cppHeader != None):
+        Functions = []
+        for i in range(0, len(cppHeader.functions)):
+            fn = Function(cppHeader.functions[i])
+            Functions.append(fn)
+        
+        return (True,Functions)
+    return (False,None)
 
 def cppClassFinder(cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)

@@ -1,5 +1,6 @@
 import sys
 import shlex
+import codecs
 
 class SeedFileLoader:
     
@@ -8,7 +9,7 @@ class SeedFileLoader:
         
     def loadSeedsFromFile(self,fileName):
         try:
-            seedFile = open(fileName, "r")
+            seedFile = codecs.open(fileName, encoding='utf-8')
         except Exception as e:
             print ("Exception was thrown when trying to open seed file: ", seedFile,"Error:\n",e.strerror,file=sys.stderr)
             sys.exit(1)

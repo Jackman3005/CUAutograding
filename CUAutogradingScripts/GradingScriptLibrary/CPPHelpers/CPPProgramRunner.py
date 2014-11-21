@@ -35,3 +35,9 @@ class CPPProgramRunner:
             errMessage = fileName + " took longer than "+str(self._timeout)+" seconds to run. Most likely an infinite loop or an unexpected prompt for input!"
             print (errMessage,file=sys.stderr)
             return (False, errMessage)
+        except Exception as e:
+            errMessage = "An unknown error occured when trying to run your program and capture it's output:\n{!s}".format(e)
+            print(errMessage,file=sys.stderr)
+            return (False, errMessage)
+            
+            
