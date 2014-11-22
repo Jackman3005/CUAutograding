@@ -28,20 +28,25 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     submissionFinder = SubmissionFinder.SubmissionFinder()
     
-    submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "crypt")
-    if (not submissionFileName):
-        submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "9")
-        if (not submissionFileName):    
-            deductions.append((-100,"Could not find a file to run! Make sure you are using the correct file name and you are submitting the .cpp source code file"))
-            return deductions
-    if(submissionFileName != "Crypto.cpp"):
-        deductions.append((-10,"Incorrect file name! Expected \"Crypto.cpp\" but was \"" + submissionFileName +"\""))
     
+    submissionFileNames = ["","",""]
+    expectedFileNames = ["Library.cpp","Book.cpp","Library.cpp"]
     
-    
+    for i in range(0,len(submissionFileNames)):
+        submissionFileNames[i] = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileNames[i].lower().strip(".cpp"))
+        if (submissionFileNames[i] == ""):
+            submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "10")
+            if (submissionFileName[i] == ""):    
+                deductions.append((-33,"Could not find a file to run! Make sure you are using the correct file name and you are submitting the .cpp source code file"))
+                return deductions
+        if(submissionFileNames[i] != expectedFileNames[i]):
+            deductions.append((-10,"Incorrect file name! Expected \" " + expectedFileNames[i] + "\" but was \"" + submissionFileNames[i] +"\""))  
     
     compiledFileName = folderNameContainingSubmission + "/hw9"
     locationOfStudentSourceCode = folderNameContainingSubmission + "/" + submissionFileName
+    shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[2], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[2])
+    
+    
     successfullyCompiled = CPPCompiler.compileCPPFile(locationOfStudentSourceCode, compiledFileName, "Crypto")
     if (not successfullyCompiled):
         deductions.append((-100,"Submission did not compile!"))
