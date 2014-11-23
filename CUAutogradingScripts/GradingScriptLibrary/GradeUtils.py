@@ -43,6 +43,7 @@ def getAllNumbersFromString(stringToParse):
     return listOfNumbers
 
 def replace_line(file_name, line_num, text):
+    #Not great for big files, but works for small stuff
     lines = open(file_name, 'r').readlines()
     lines[line_num] = text
     out = open(file_name, 'w')
@@ -95,12 +96,15 @@ def CppFunctionFinder (cppSourceFileName):
 
 def cppClassFinder(cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
-
-    nameClasses = []
-    for i in cppHeader.classes.keys():
-        nameClasses.append(Classes(i,cppHeader.classes[i]))
+    
+    if (cppHeader != None):
         
-    return nameClasses
+        nameClasses = []
+        for i in cppHeader.classes.keys():
+            nameClasses.append(Classes(i,cppHeader.classes[i]))
+            
+        return (True,nameClasses)
+    return(False,None)
 
 def cppParser(cppSourceFileName):
     cppHeader = funCppHeaderParser(cppSourceFileName)
@@ -153,6 +157,22 @@ class Parameter:
     
     def getType(self):
         return self._parameterInfo['type']
+    
+class Method:
+    def __init__(self,MDict,scope):
+        self._methodInfo = MDict
+        self._scope = scope        
+    def getName(self):
+        return self._methodInfo['name']
+    def getScope(self):
+        return self._scope
+    def getReturnType(self):
+        return self._methodInfo['rtnType']
+    
+    def getParameters(self):
+        paramList = []
+        for x in self._methodInfo['parameters']:
+            paramList.append(Parameter(x))
 
 class Classes:
     def __init__(self,CName,CDict):
@@ -160,3 +180,13 @@ class Classes:
         self._className = CName       
     def getName(self):
         return self._className
+    def getMethods(self):
+        methodList =[]
+        for x in self._classInfo['methods']:
+            if len(self._classInfo['methods'][x]) != 0:
+                for y in range(0,len(self._classInfo['methods'][x])):
+                    methodList.append(Method(self._classInfo['methods'][x][y],x))
+        return methodList
+                
+
+            
