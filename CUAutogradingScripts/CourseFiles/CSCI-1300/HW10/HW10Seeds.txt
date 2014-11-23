@@ -1,5 +1,2 @@
-#Seed file for HW9
--e 5 message1.txt;; "Mjd ymjwj rd 4ym gjxy kwnjsi!"
--d 13 message2.txt.enc;; "Psst... Don't tell anyone... but I only have $13.37 in all of my bank accounts!!!"
--e 1 message3.txt;; "J qjdl nz optf xifo J esjwf nz dbs. Ipqf uijt pof dbo'u cf efdszqufe..."
--d 18 message4.txt.enc;; "HOLY STROMBOLI IS THAT Justin Bieber? !@#$%^&*()_-=+/\.,~`"
+#Seed file for HW10
+books_seed.txt ratings_seed.txt; ; "Mjd ymjwj rd 4ym gjxy kwnjsi!"

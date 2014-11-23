@@ -14,6 +14,7 @@ import re
 import shutil
 import codecs
 from GradingScriptLibrary.GradeUtils import studentFeedback
+from GradingScriptLibrary.GradeUtils import replace_line
 from GradingScriptLibrary.CPPHelpers import CPPCompiler
 from GradingScriptLibrary.CPPHelpers.CPPProgramRunner import CPPProgramRunner
 from GradingScriptLibrary.SeedFileLoader import SeedFileLoader
@@ -31,6 +32,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     submissionFileNames = ["","",""]
     expectedFileNames = ["Library.cpp","Book.cpp","Library.cpp"]
+    driverFileName = "SeedDriver.cpp"
     
     for i in range(0,len(submissionFileNames)):
         submissionFileNames[i] = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileNames[i].lower().strip(".cpp"))
@@ -42,20 +44,26 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         if(submissionFileNames[i] != expectedFileNames[i]):
             deductions.append((-10,"Incorrect file name! Expected \" " + expectedFileNames[i] + "\" but was \"" + submissionFileNames[i] +"\""))  
     
-    compiledFileName = folderNameContainingSubmission + "/hw9"
-    locationOfStudentSourceCode = folderNameContainingSubmission + "/" + submissionFileName
-    shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[2], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[2])
+    #Look at classes
+    classes = []        
+    for i in range(0,len(submissionFileNames)):
+        if submissionFileNames[i] != "":
+            succeeded, cls = GradeUtils.cppClassFinder(folderNameContainingSubmission + "/" + submissionFileNames[i])
+            if succeeded:
+                classes.append(cls)
+            else:
+                classes.append('FAILED')
+    #this will loop through all classes and print methods of each, not needed but shows how to access the methods
+    for i in range(0,len(classes)):
+        for j in range(0,len(classes[i])):
+            methods = classes[i][j].getMethods()
+            print(classes[i][j].getName())
+            for k in range(0,len(methods)):
+                print('name ' + methods[k].getName())
+                print('scope ' + methods[k].getScope())
+                print('rtn ' + methods[k].getReturnType())
     
-    
-    successfullyCompiled = CPPCompiler.compileCPPFile(locationOfStudentSourceCode, compiledFileName, "Crypto")
-    if (not successfullyCompiled):
-        deductions.append((-100,"Submission did not compile!"))
-        return deductions
-    
-    
-    #Check for correct functions
-    
-    succeeded, functions = GradeUtils.CppFunctionFinder(locationOfStudentSourceCode)
+    #this needs to be converted to look at classes instead of functions        
     if (not succeeded):
         deductions.append((-0, "There was an error parsing your file to determine if the functions were correctly defined. Since this feature might not be stable you have not received points off."))
     else:
@@ -99,6 +107,29 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         
         for missingFunction in requiredFunctions.keys():
             deductions.append((-10, "Function \"" + missingFunction + "\" was missing from your source code file."))
+    
+    #Now compile the file        
+    compiledFileName = folderNameContainingSubmission + "/hw10"
+    locationOfStudentSourceCode = folderNameContainingSubmission + "/" + driverFileName
+    
+    #copy seed driver to student submission folder
+    shutil.copyfile(folderContainingScripts +"/" + driverFileName,locationOfStudentSourceCode)
+
+    #edit the driver file to import the student library.cpp
+    replace_line(locationOfStudentSourceCode,0,"#include \"" + submissionFileNames[0] + "\"\n")
+    
+    seedLoader = SeedFileLoader()
+    seeds = seedLoader.loadSeedsFromFile(folderContainingScripts + "/HW10Seeds.txt")
+    
+    successfullyCompiled = CPPCompiler.compileCPPFile(locationOfStudentSourceCode, compiledFileName, "SeedDriver")
+    if (not successfullyCompiled):
+        deductions.append((-100,"Submission did not compile!"))
+        return deductions
+    
+    for seed in seeds:
+        #copy seed files to submissionn directory
+        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[0], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[0])
+        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[1], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[1])    
         
         
     seedLoader = SeedFileLoader()
