@@ -67,19 +67,18 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     if (not succeeded):
         deductions.append((-0, "There was an error parsing your file to determine if the functions were correctly defined. Since this feature might not be stable you have not received points off."))
     else:
-        requiredFunctions = {}
-        requiredFunctions["readFile"] = {"params":["string"],"returns":"string"}
-        requiredFunctions["encryptChar"] = {"params":["char","int"],"returns":"char"}
-        requiredFunctions["decryptChar"] = {"params":["char","int"],"returns":"char"}
-        requiredFunctions["encryptMessage"] = {"params":["string","int"],"returns":"string"}
-        requiredFunctions["decryptMessage"] = {"params":["string","int"],"returns":"string"}
-        requiredFunctions["writeToFile"] = {"params":["string","string","string"],"returns":"void"}
-        requiredFunctions["main"] = {}
+        requiredClasses = {}
+        requiredClasses["Book"] = {"params":["string","string"],"returns":"string"}
+        requiredClasses["getAuthor"] = {"params":[],"returns":"string"}
+        requiredClasses["getTitle"] = {"params":[],"returns":"string"}
+        requiredClasses["setAuthor"] = {"params":["string"],"returns":"void"}
+        requiredClasses["toString"] = {"params":[],"returns":"string"}
+        requiredClasses["Book"] = {}
         for function in functions:
-            if (function.getName() in requiredFunctions):
+            if (function.getName() in requiredClasses):
                 hadCorrectParameters = True
                 hadCorrectReturnType = True
-                requiredFunction = requiredFunctions[function.getName()]
+                requiredFunction = requiredClasses[function.getName()]
                 if ("params" in requiredFunction):
                     studentParameters = function.getParameters()
                     expectedParameters = requiredFunction["params"]
@@ -91,7 +90,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                                 hadCorrectParameters = False
                 if ("returns" in requiredFunction):
                     hadCorrectReturnType = function.getReturnType() == requiredFunction["returns"] 
-                del requiredFunctions[function.getName()]
+                del requiredClasses[function.getName()]
                 
                 comment = "The \"" + function.getName() + "\" function was incorrectly defined\n"
                 if (not hadCorrectParameters):
@@ -105,7 +104,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                     deductions.append((-10, comment))
         
         
-        for missingFunction in requiredFunctions.keys():
+        for missingFunction in requiredClasses.keys():
             deductions.append((-10, "Function \"" + missingFunction + "\" was missing from your source code file."))
     
     #Now compile the file        
