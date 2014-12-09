@@ -1,4 +1,4 @@
-[ReplaceMeWithStudentImport]
+
 //Leave line 1 blank so the grader can append in the users library.cpp class name
 
 int main (int argv, char* argc[] )

@@ -3,6 +3,7 @@
 #CSCI 1300 - Assignment 6 Grader
 #THESE LINES ARE NEEDED TO ADD THE GradingScriptLibrary path to the system path so they can be imported!!!
 import os,sys,inspect
+from numpy import nan
 
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../../../")))
 if cmd_subfolder not in sys.path:
@@ -13,14 +14,15 @@ import subprocess
 import re
 import shutil
 import codecs
-from GradingScriptLibrary.GradeUtils import studentFeedback
-from GradingScriptLibrary.GradeUtils import replace_line
+from GradingScriptLibrary.GradeUtils import studentFeedback,\
+    getAllNumbersFromString,remove_control_chars
+from GradingScriptLibrary.GradeUtils import appendToBeginningOfFile
 from GradingScriptLibrary.CPPHelpers import CPPCompiler
 from GradingScriptLibrary.CPPHelpers.CPPProgramRunner import CPPProgramRunner
 from GradingScriptLibrary.SeedFileLoader import SeedFileLoader
 from GradingScriptLibrary import GradeUtils
 from GradingScriptLibrary import SubmissionFinder
-
+anyNumberRE =  re.compile("([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)")
 
 def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     deductions = []
@@ -29,21 +31,80 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     submissionFinder = SubmissionFinder.SubmissionFinder()
     
-    
-    submissionFileNames = ["","",""]
-    expectedFileNames = ["Library.cpp","Book.cpp","Library.cpp"]
     driverFileName = "SeedDriver.cpp"
     
-    for i in range(0,len(submissionFileNames)):
-        submissionFileNames[i] = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileNames[i].lower().strip(".cpp"))
-        if (submissionFileNames[i] == ""):
-            submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "10")
-            if (submissionFileName[i] == ""):    
-                deductions.append((-33,"Could not find a file to run! Make sure you are using the correct file name and you are submitting the .cpp source code file"))
-                return deductions
-        if(submissionFileNames[i] != expectedFileNames[i]):
-            deductions.append((-10,"Incorrect file name! Expected \" " + expectedFileNames[i] + "\" but was \"" + submissionFileNames[i] +"\""))  
+    expectedFileName = "Library.cpp"
+    submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileName.strip(".cpp"))
+    if (not submissionFileName):
+        submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "10")
+        if (not submissionFileName):    
+            deductions.append((-100,"Could not find a file to run! Make sure you are using the correct file name and you are submitting the .cpp source code file"))
+            return deductions
+    if(submissionFileName != expectedFileName):
+        deductions.append((-10,"Incorrect file name! Expected \" " + expectedFileName + "\" but was \"" + submissionFileName +"\""))  
     
+    locationOfSeedDriverFile = folderNameContainingSubmission + "/" + driverFileName
+    #copy seed driver to student submission folder
+    shutil.copyfile(folderContainingScripts +"/" + driverFileName,locationOfSeedDriverFile)
+    #edit the driver file to import the student library.cpp
+    appendToBeginningOfFile(locationOfSeedDriverFile,"#include \"" + submissionFileName + "\"")
+    
+    deductions.extend(verifyClassesExist())
+    
+    #Now compile the file        
+    compiledFileName = folderNameContainingSubmission + "/hw10"
+    successfullyCompiled = CPPCompiler.compileCPPFile(locationOfSeedDriverFile, compiledFileName, "Seeded Driver")
+    if (not successfullyCompiled):
+        deductions.append((-100,"Submission did not compile!"))
+        return deductions
+         
+    seeds = SeedFileLoader().loadSeedsFromFile(folderContainingScripts + "/HW10Seeds.txt")
+    for seed in seeds:
+        #copy the input file to the student submission directory so user can read from it and then write a new file to the same directory
+        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[0], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[0])
+        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[1], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[1])   
+        seed.commandLineInputs()[0] =folderNameContainingSubmission + "/" +  seed.commandLineInputs()[0]
+        seed.commandLineInputs()[1] =folderNameContainingSubmission + "/" +  seed.commandLineInputs()[1]
+        
+        programRunner = CPPProgramRunner()
+        successfullyRan,output = programRunner.run(compiledFileName, seed.commandLineInputs(), seed.consoleInputs())
+        if (not successfullyRan):
+            deductions.append((-100/len(seeds),output))
+            return deductions
+        fileContainingExpectedOutput = open(folderContainingScripts + "/" + seed.expectedOutputs()[0],"r")
+        
+        missingOutput = ""
+        outputMatches = True
+        for line in fileContainingExpectedOutput:
+            cleanedOutput = re.subn('[\ \t]+',' ',output)[0]
+            if line not in cleanedOutput:
+                lineFound = False
+                allNumbersInExpectedLine = getAllNumbersFromString(line)
+                if (len(allNumbersInExpectedLine) > 0):
+                    expectedNumber = allNumbersInExpectedLine[0]
+                    lineTextSansNumbers = anyNumberRE.sub('',line).strip()
+                    for l in cleanedOutput.split('\n'):
+                        l = re.subn("\s+", ' ', l)[0]
+                        lineTextSansNumbers = re.subn("\s+", ' ', lineTextSansNumbers)[0]
+                        if lineTextSansNumbers in l:
+                            allNumbersInActualLine = getAllNumbersFromString(l)
+                            if (len(allNumbersInActualLine) > 0):
+                                actualNumber = allNumbersInActualLine[0]
+                                if (abs(expectedNumber - actualNumber) <= .02):
+                                    lineFound = True
+                            elif(expectedNumber == 0):
+                                    lineFound = True
+                if (not lineFound):
+                    outputMatches = False
+                    missingOutput += line + "\n"
+        if (not outputMatches):
+            deductions.append((-80/len(seeds),"Output did not match, the following lines were missing: \n" + missingOutput))
+        
+        
+    return deductions
+
+def verifyClassesExist():
+    '''
     #Look at classes
     classes = []        
     for i in range(0,len(submissionFileNames)):
@@ -62,177 +123,18 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                 print('name ' + methods[k].getName())
                 print('scope ' + methods[k].getScope())
                 print('rtn ' + methods[k].getReturnType())
-    
-    #this needs to be converted to look at classes instead of functions        
-    if (not succeeded):
-        deductions.append((-0, "There was an error parsing your file to determine if the functions were correctly defined. Since this feature might not be stable you have not received points off."))
-    else:
-        requiredClasses = {}
-        requiredClasses["Book"] = {"params":["string","string"],"returns":"string"}
-        requiredClasses["getAuthor"] = {"params":[],"returns":"string"}
-        requiredClasses["getTitle"] = {"params":[],"returns":"string"}
-        requiredClasses["setAuthor"] = {"params":["string"],"returns":"void"}
-        requiredClasses["toString"] = {"params":[],"returns":"string"}
-        requiredClasses["Book"] = {}
-        for function in functions:
-            if (function.getName() in requiredClasses):
-                hadCorrectParameters = True
-                hadCorrectReturnType = True
-                requiredFunction = requiredClasses[function.getName()]
-                if ("params" in requiredFunction):
-                    studentParameters = function.getParameters()
-                    expectedParameters = requiredFunction["params"]
-                    if(len(studentParameters) != len(expectedParameters)):
-                        hadCorrectParameters = False
-                    else:
-                        for i in range(len(studentParameters)):
-                            if (studentParameters[i].getType() != expectedParameters[i]):
-                                hadCorrectParameters = False
-                if ("returns" in requiredFunction):
-                    hadCorrectReturnType = function.getReturnType() == requiredFunction["returns"] 
-                del requiredClasses[function.getName()]
-                
-                comment = "The \"" + function.getName() + "\" function was incorrectly defined\n"
-                if (not hadCorrectParameters):
-                    comment += "Expected " + str(len(requiredFunction['params'])) + " parameters of type " + ", ".join(requiredFunction['params']) + "\n"
-                    comment += "Received " + str(len(function.getParameters())) + " parameters of type " + ", ".join([x.getType() for x in function.getParameters()])  + "\n"
-                if (not hadCorrectReturnType):
-                    comment += "Expected return type of " + requiredFunction['returns'] + "\n"
-                    comment += "Received return type of " + function.getReturnType() + "\n"
-                
-                if (not hadCorrectParameters or not hadCorrectReturnType):
-                    deductions.append((-10, comment))
-        
-        
-        for missingFunction in requiredClasses.keys():
-            deductions.append((-10, "Function \"" + missingFunction + "\" was missing from your source code file."))
-    
-    #Now compile the file        
-    compiledFileName = folderNameContainingSubmission + "/hw10"
-    locationOfStudentSourceCode = folderNameContainingSubmission + "/" + driverFileName
-    
-    #copy seed driver to student submission folder
-    shutil.copyfile(folderContainingScripts +"/" + driverFileName,locationOfStudentSourceCode)
-
-    #edit the driver file to import the student library.cpp
-    replace_line(locationOfStudentSourceCode,0,"#include \"" + submissionFileNames[0] + "\"\n")
-    
-    seedLoader = SeedFileLoader()
-    seeds = seedLoader.loadSeedsFromFile(folderContainingScripts + "/HW10Seeds.txt")
-    
-    successfullyCompiled = CPPCompiler.compileCPPFile(locationOfStudentSourceCode, compiledFileName, "SeedDriver")
-    if (not successfullyCompiled):
-        deductions.append((-100,"Submission did not compile!"))
-        return deductions
-    
-    for seed in seeds:
-        #copy seed files to submissionn directory
-        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[0], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[0])
-        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[1], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[1])    
-        
-        
-    seedLoader = SeedFileLoader()
-    seeds = seedLoader.loadSeedsFromFile(folderContainingScripts + "/HW9Seeds.txt")
-    
-    for seed in seeds:
-        
-        #copy the input file to the student submission directory so user can read from it and then write a new file to the same directory
-        shutil.copyfile(folderContainingScripts + "/" + seed.commandLineInputs()[2], folderNameContainingSubmission + "/" +  seed.commandLineInputs()[2])
-        seed.commandLineInputs()[2] =folderNameContainingSubmission + "/" +  seed.commandLineInputs()[2]
-        with open(seed.commandLineInputs()[2],"r") as seededInputFile:
-            contentsOfSeedFile = seededInputFile.read().strip()
-        
-        programRunner = CPPProgramRunner()
-        successfullyRan,output = programRunner.run(compiledFileName, seed.commandLineInputs(), seed.consoleInputs())
-        if (not successfullyRan):
-            deductions.append((-100,output))
-            return deductions
-        
-      
-        
-        expectedEncodedOrDecodedOutput = seed.expectedOutputs()[0]
-        userOutput = output.lstrip().rstrip()
-        
-        expectedExactConsoleOutputLine1 = ""
-        if ('e' in seed.commandLineInputs()[0].lower()):
-            extension = ".enc"
-            expectedExactConsoleOutputLine1 += "Encrypting file: " + seed.commandLineInputs()[2]
-        else:
-            extension = ".dec"
-            expectedExactConsoleOutputLine1 += "Decrypting file: " + seed.commandLineInputs()[2]
-        
-        expectedExactConsoleOutputLine2 = contentsOfSeedFile
-        expectedExactConsoleOutputLine3 = expectedEncodedOrDecodedOutput
-        
-        
-        
-        
-        
-        #Make sure they have all three lines of correct output 
-        messedUpConsoleOutput = False
-        if (expectedExactConsoleOutputLine3 not in userOutput):
-            deductions.append((-100/len(seeds),"Console output was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
-                                               "-------------------------------------------------------\n" +
-                                               "The provided file contained the text:\n" + 
-                                               contentsOfSeedFile + "\n\n" +
-                                               "The expected output was: \n" + 
-                                               expectedExactConsoleOutputLine1 + "\n" + 
-                                               expectedExactConsoleOutputLine2 +"\n" + 
-                                               expectedExactConsoleOutputLine3  + "\n\n" +
-                                               "What was actually received was:\n" +
-                                               userOutput + "\n" +
-                                               "-------------------------------------------------------\n"  ))
-            messedUpConsoleOutput = True
-        
-        messedUpFileOutput = False
-        if (not messedUpConsoleOutput):
-            userOutputFileName = seed.commandLineInputs()[2] + extension
-            
-            try:
-                
-                userOutputFile = codecs.open(userOutputFileName,encoding='utf-8')
-                contentsOfFile = GradeUtils.remove_control_chars(userOutputFile.read())
-                userOutputFile.close()
-                userOutput = contentsOfFile.lstrip().rstrip()
-                if (userOutput != expectedEncodedOrDecodedOutput):
-                    deductions.append((-100/len(seeds),"Output file was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
-                                                       "-------------------------------------------------------\n" +
-                                                       "The provided file contained the text:\n" + 
-                                                       contentsOfSeedFile + "\n\n" +
-                                                       "The expected output was: \n\"" + 
-                                                       expectedEncodedOrDecodedOutput  + "\"\n\n" +
-                                                       "What was actually received was:\n\"" +
-                                                       userOutput + "\"\n" +
-                                                       "-------------------------------------------------------\n"  ))
-                    messedUpFileOutput = True
-            except Exception as e:
-                studentFeedback("There was an issue reading your output file!!", "Expected to find an output file of name \"" + os.path.split(userOutputFileName)[1] + "\"\n",e)             
-        if((not messedUpConsoleOutput and not messedUpFileOutput) and (expectedExactConsoleOutputLine1 not in userOutput or expectedExactConsoleOutputLine2 not in userOutput)):
-            deductions.append((-10,"Console output had correct decoded or encoded string, but did not match the expected string exactly. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
-                                               "-------------------------------------------------------\n" +
-                                               "The provided file contained the text:\n" + 
-                                               contentsOfSeedFile + "\n\n" +
-                                               "The expected output was: \n" + 
-                                               expectedExactConsoleOutputLine1 + "\n" + 
-                                               expectedExactConsoleOutputLine2 +"\n" + 
-                                               expectedExactConsoleOutputLine3  + "\n\n" +
-                                               "What was actually received was:\n" +
-                                               userOutput + "\n" +
-                                               "-------------------------------------------------------\n"  ))   
-          
-    
-    return deductions
-
+    '''
+    return [] #Fill this in later
 def deductionsToGradeAndComments(deductions):
     grade = 100
-    comments = ""    
+    comments = "" 
     for gradeDeduction, comment in deductions:
         grade += gradeDeduction
         comments += ("[%.1f] " % gradeDeduction) + comment + "\n"
     if (len(deductions)==0):
         comments = "Great work!"
     else:
-        comments = comments.lstrip("\n").strip()
+        comments = comments.strip("\r").strip("\n")
     grade = max(round(grade),0)
     
     return (grade,comments)

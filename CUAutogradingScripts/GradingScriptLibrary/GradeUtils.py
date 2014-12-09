@@ -42,13 +42,14 @@ def getAllNumbersFromString(stringToParse):
             None
     return listOfNumbers
 
-def replace_line(file_name, line_num, text):
-    #Not great for big files, but works for small stuff
-    lines = open(file_name, 'r').readlines()
-    lines[line_num] = text
-    out = open(file_name, 'w')
-    out.writelines(lines)
-    out.close()
+#This function could take some time with larger Files.
+def appendToBeginningOfFile(file_name, text):
+    with open(file_name, "r+") as f:
+     old = f.read() # read everything in the file
+     f.seek(0) # rewind
+     f.write(text + "\n" + old)
+     
+     
 #This function will leniently look for words within a string. The words must be in the order
 #that they are expected. The words may be mispelled or have the wrong case and it will still be
 #counted as acceptable. Also if there are extra words in between the expected words they are essentially

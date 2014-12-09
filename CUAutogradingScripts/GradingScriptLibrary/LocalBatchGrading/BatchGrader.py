@@ -74,6 +74,7 @@ else:
             Students[studentId]['Grade'], Students[studentId]['Comments'] = (0,"[-100] Could not find a valid submission")
         studentCount +=1
         
+    
     print ("Writing csv file",outputCsvFileLocation)
     StudentCSV.makeCSV(Students,outputCsvFileLocation)    
     

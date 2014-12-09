@@ -1,2 +1,2 @@
 #Seed file for HW10
-books_seed.txt ratings_seed.txt; ; "Mjd ymjwj rd 4ym gjxy kwnjsi!"
+books_seed.txt ratings_seed.txt; ; expectedOutputForSeed1.txt

@@ -1,0 +1,57 @@
+55 books read in. Closing book list file.
+86 users read in. Closing user file.
+3.83 The Hitchhiker's Guide To The Galaxy by Douglas Adams
+1.70 Watership Down by Richard Adams
+1.83 The Five People You Meet in Heaven by Mitch Albom
+1.00 Speak by Laurie Halse Anderson
+-0.33 I Know Why the Caged Bird Sings by Maya Angelou
+-0.33 Thirteen Reasons Why by Jay Asher
+2.57 Foundation Series by Isaac Asimov
+0.43 The Sisterhood of the Travelling Pants by Ann Brashares
+2.50 A Great and Terrible Beauty by Libba Bray
+2.25 The Da Vinci Code by Dan Brown
+0.90 The Princess Diaries by Meg Cabot
+3.81 Ender's Game by Orson Scott Card
+3.00 The Hunt for Red October by Tom Clancy
+2.50 The Hunger Games by Suzanne Collins
+1.58 The Great Gatsby by F. Scott Fitzgerald
+1.40 Ranger's Apprentice Series by John Flanagan
+2.77 Inkheart by Cornelia Funke
+2.38 Neuromancer by William Gibson
+1.36 Lord of the Flies by William Golding
+3.50 The Princess Bride by William Goldman
+0.50 Dinotopia: A Land Apart from Time by James Gurney
+1.00 Far North by Will Hobbs
+0.33 Practical Magic by Alice Hoffman
+1.88 Brave New World by Aldous Huxley
+3.00 The Summer Tree by Guy Gavriel Kay
+2.62 Flowers For Algernon by Daniel Keyes
+1.00 Owl in Love by Patrice Kindl
+1.52 Naruto by Masashi Kishimoto
+2.33 Bleach (graphic novel) by Tite Kubo
+1.00 Kiss the Dust by Elizabeth Laird
+1.75 To Kill a Mockingbird by Harper Lee
+3.24 The Lion the Witch and the Wardrobe by C S Lewis
+3.86 The Bourne Series by Robert Ludlum
+0.24 Life of Pi by Yann Martel
+0.00 Breathless by Lurlene McDaniel
+0.47 Twilight Series by Stephenie Meyer
+4.00 Sabriel by Garth Nix
+2.83 Nineteen Eighty-Four by George Orwell
+2.73 Eragon by Christopher Paolini
+3.58 Hatchet by Gary Paulsen
+3.80 My Sister's Keeper by Jodi Picoult
+2.76 The Golden Compass by Philip Pullman
+3.60 Harry Potter Series by J.K. Rowling
+3.56 Holes by Louis Sachar
+3.00 Shonen Jump Series by Shueisha
+0.00 The Shadow Club by Neil Shusterman
+2.06 Bone Series by Jeff Smith
+3.00 Maus: A Survivor's Tale by Art Spiegelman
+2.56 The Joy Luck Club by Amy Tan
+3.04 The Lord of the Rings by J R R Tolkien
+2.86 The Hobbit by J R R Tolkien
+2.33 Shattered by Eric Walters
+2.83 The War Of The Worlds by H G Wells
+2.60 Dealing with Dragons by Patricia C. Wrede
+1.56 The Chrysalids by John Wyndham
