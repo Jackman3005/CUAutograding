@@ -99,6 +99,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     seedLoader = SeedFileLoader()
     seeds = seedLoader.loadSeedsFromFile(folderContainingScripts + "/HW9Seeds.txt")
     
+    markedDownForIncorrectFormatting = False
     for seed in seeds:
         
         #copy the input file to the student submission directory so user can read from it and then write a new file to the same directory
@@ -152,9 +153,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         messedUpFileOutput = False
         if (not messedUpConsoleOutput):
             userOutputFileName = seed.commandLineInputs()[2] + extension
-            
             try:
-                
                 userOutputFile = codecs.open(userOutputFileName,encoding='utf-8')
                 contentsOfFile = GradeUtils.remove_control_chars(userOutputFile.read())
                 userOutputFile.close()
@@ -173,7 +172,11 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
             except Exception as e:
                 studentFeedback("There was an issue reading your output file!!", "Expected to find an output file of name \"" + os.path.split(userOutputFileName)[1] + "\"\n",e)             
         if((not messedUpConsoleOutput and not messedUpFileOutput) and (expectedExactConsoleOutputLine1 not in userOutput or expectedExactConsoleOutputLine2 not in userOutput)):
-            deductions.append((-10,"Console output had correct decoded or encoded string, but did not match the expected string exactly. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
+            formattingDeduction = 0
+            if (not markedDownForIncorrectFormatting):
+                formattingDeduction = -15
+                markedDownForIncorrectFormatting = True
+            deductions.append((formattingDeduction,"Console output had correct decoded or encoded string, but did not match the expected string exactly. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
                                                "-------------------------------------------------------\n" +
                                                "The provided file contained the text:\n" + 
                                                contentsOfSeedFile + "\n\n" +
@@ -183,9 +186,8 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                                                expectedExactConsoleOutputLine3  + "\n\n" +
                                                "What was actually received was:\n" +
                                                userOutput + "\n" +
-                                               "-------------------------------------------------------\n"  ))   
-          
-    
+                                               "-------------------------------------------------------\n"  ))
+                
     return deductions
 
 def deductionsToGradeAndComments(deductions):
