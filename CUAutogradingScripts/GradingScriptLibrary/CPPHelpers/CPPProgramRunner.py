@@ -27,7 +27,7 @@ class CPPProgramRunner:
             else:
                 out = subprocess.check_output(commandLineArgsToPass,timeout=self._timeout,stderr=sys.stderr)
             print("OUTPUT: ",out,"\n\n",file=sys.stderr)
-            return (True,out.decode())
+            return (True,out.decode('utf-8','replace'))
         except subprocess.CalledProcessError as err:
             print("Error running submission: {!s}".format(err), file=sys.stderr)
             return (False,"Runtime Error occurred when running " + fileName)

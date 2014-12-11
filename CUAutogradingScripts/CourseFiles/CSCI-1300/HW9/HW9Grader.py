@@ -51,6 +51,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     #Check for correct functions
     
     succeeded, functions = GradeUtils.CppFunctionFinder(locationOfStudentSourceCode)
+    alreadyReceivedPointsOffForRequiredFunctions = False
     if (not succeeded):
         deductions.append((-0, "There was an error parsing your file to determine if the functions were correctly defined. Since this feature might not be stable you have not received points off."))
     else:
@@ -68,14 +69,15 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                 hadCorrectReturnType = True
                 requiredFunction = requiredFunctions[function.getName()]
                 if ("params" in requiredFunction):
-                    studentParameters = function.getParameters()
+                    studentParameters = [x.getType() for x in function.getParameters()]
                     expectedParameters = requiredFunction["params"]
                     if(len(studentParameters) != len(expectedParameters)):
                         hadCorrectParameters = False
                     else:
-                        for i in range(len(studentParameters)):
-                            if (studentParameters[i].getType() != expectedParameters[i]):
-                                hadCorrectParameters = False
+                        expectedParameterSet = set(expectedParameters)
+                        studentParameterSet = set(studentParameters)
+                        if (not studentParameterSet.issubset(expectedParameterSet)):
+                            hadCorrectParameters = False
                 if ("returns" in requiredFunction):
                     hadCorrectReturnType = function.getReturnType() == requiredFunction["returns"] 
                 del requiredFunctions[function.getName()]
@@ -89,12 +91,17 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                     comment += "Received return type of " + function.getReturnType() + "\n"
                 
                 if (not hadCorrectParameters or not hadCorrectReturnType):
-                    deductions.append((-10, comment))
-        
-        
-        for missingFunction in requiredFunctions.keys():
-            deductions.append((-10, "Function \"" + missingFunction + "\" was missing from your source code file."))
-        
+                    if (alreadyReceivedPointsOffForRequiredFunctions):
+                        deductions.append((0,comment))
+                    else:
+                        deductions.append((-10, comment))
+                        alreadyReceivedPointsOffForRequiredFunctions = True
+        if (len(requiredFunctions) >0):
+            missingFunctionsString = ""
+            for missingFunction in requiredFunctions.keys():
+                missingFunctionsString += "\"" + missingFunction + "\" "
+            deductions.append((-10, "Function(s) " + missingFunctionsString + " were missing from your source code file."))
+            
         
     seedLoader = SeedFileLoader()
     seeds = seedLoader.loadSeedsFromFile(folderContainingScripts + "/HW9Seeds.txt")
@@ -115,7 +122,6 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
             return deductions
         
       
-        
         expectedEncodedOrDecodedOutput = seed.expectedOutputs()[0]
         userOutput = output.lstrip().rstrip()
         
@@ -130,14 +136,10 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         expectedExactConsoleOutputLine2 = contentsOfSeedFile
         expectedExactConsoleOutputLine3 = expectedEncodedOrDecodedOutput
         
-        
-        
-        
-        
         #Make sure they have all three lines of correct output 
         messedUpConsoleOutput = False
         if (expectedExactConsoleOutputLine3 not in userOutput):
-            deductions.append((-100/len(seeds),"Console output was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
+            deductions.append((-50.0/len(seeds),"Console output was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
                                                "-------------------------------------------------------\n" +
                                                "The provided file contained the text:\n" + 
                                                contentsOfSeedFile + "\n\n" +
@@ -151,30 +153,30 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
             messedUpConsoleOutput = True
         
         messedUpFileOutput = False
-        if (not messedUpConsoleOutput):
-            userOutputFileName = seed.commandLineInputs()[2] + extension
-            try:
-                userOutputFile = codecs.open(userOutputFileName,encoding='utf-8')
-                contentsOfFile = GradeUtils.remove_control_chars(userOutputFile.read())
-                userOutputFile.close()
-                userOutput = contentsOfFile.lstrip().rstrip()
-                if (userOutput != expectedEncodedOrDecodedOutput):
-                    deductions.append((-100/len(seeds),"Output file was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
-                                                       "-------------------------------------------------------\n" +
-                                                       "The provided file contained the text:\n" + 
-                                                       contentsOfSeedFile + "\n\n" +
-                                                       "The expected output was: \n\"" + 
-                                                       expectedEncodedOrDecodedOutput  + "\"\n\n" +
-                                                       "What was actually received was:\n\"" +
-                                                       userOutput + "\"\n" +
-                                                       "-------------------------------------------------------\n"  ))
-                    messedUpFileOutput = True
-            except Exception as e:
-                studentFeedback("There was an issue reading your output file!!", "Expected to find an output file of name \"" + os.path.split(userOutputFileName)[1] + "\"\n",e)             
+    
+        userOutputFileName = seed.commandLineInputs()[2] + extension
+        try:
+            userOutputFile = codecs.open(userOutputFileName,encoding='utf-8')
+            contentsOfFile = GradeUtils.remove_control_chars(userOutputFile.read())
+            userOutputFile.close()
+            userOutput = contentsOfFile.lstrip().rstrip()
+            if (userOutput != expectedEncodedOrDecodedOutput):
+                deductions.append((-50.0/len(seeds),"Output file was incorrect. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
+                                                   "-------------------------------------------------------\n" +
+                                                   "The provided file contained the text:\n" + 
+                                                   contentsOfSeedFile + "\n\n" +
+                                                   "The expected output was: \n\"" + 
+                                                   expectedEncodedOrDecodedOutput  + "\"\n\n" +
+                                                   "What was actually received was:\n\"" +
+                                                   userOutput + "\"\n" +
+                                                   "-------------------------------------------------------\n"  ))
+                messedUpFileOutput = True
+        except Exception as e:
+            studentFeedback("There was an issue reading your output file!!", "Expected to find an output file of name \"" + os.path.split(userOutputFileName)[1] + "\"\n",e)             
         if((not messedUpConsoleOutput and not messedUpFileOutput) and (expectedExactConsoleOutputLine1 not in userOutput or expectedExactConsoleOutputLine2 not in userOutput)):
             formattingDeduction = 0
             if (not markedDownForIncorrectFormatting):
-                formattingDeduction = -15
+                formattingDeduction = -7.5
                 markedDownForIncorrectFormatting = True
             deductions.append((formattingDeduction,"Console output had correct decoded or encoded string, but did not match the expected string exactly. Given Parameters: " + " ".join(seed.commandLineInputs()) + "\n" + 
                                                "-------------------------------------------------------\n" +
