@@ -15,7 +15,7 @@ import re
 import shutil
 import codecs
 from GradingScriptLibrary.GradeUtils import studentFeedback,\
-    getAllNumbersFromString,remove_control_chars
+    getAllNumbersFromString,remove_control_chars,stringContainsCorrectWords_WillHandleMispellings
 from GradingScriptLibrary.GradeUtils import appendToBeginningOfFile
 from GradingScriptLibrary.CPPHelpers import CPPCompiler
 from GradingScriptLibrary.CPPHelpers.CPPProgramRunner import CPPProgramRunner
@@ -29,9 +29,10 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     studentFeedback("\n--------------------------------------------------------------")
     studentFeedback("Grading:",folderNameContainingSubmission)
     
+    #Find the submission in the folder - sometimes it isn't named exactly
     submissionFinder = SubmissionFinder.SubmissionFinder()
     
-    expectedFileName = "HW1.cpp"
+    expectedFileName = "1.cpp"
     submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileName.strip(".cpp"))
     if (not submissionFileName):
         submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "1")
@@ -42,12 +43,6 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         deductions.append((-10,"Incorrect file name! Expected \" " + expectedFileName + "\" but was \"" + submissionFileName +"\""))  
     
     locationOfFile = folderNameContainingSubmission + "/" + submissionFileName
-    #copy seed driver to student submission folder
-    #shutil.copyfile(folderContainingScripts +"/" + driverFileName,locationOfSeedDriverFile)
-    #edit the driver file to import the student library.cpp
-    #appendToBeginningOfFile(locationOfSeedDriverFile,"#include \"" + submissionFileName + "\"")
-    
-    #deductions.extend(verifyClassesExist())
     
     #Now compile the file        
     compiledFileName = folderNameContainingSubmission + "/hw1"
@@ -56,16 +51,18 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         deductions.append((-100,"Submission did not compile!"))
         return deductions
          
-    #seeds = SeedFileLoader().loadSeedsFromFile(folderContainingScripts + "/HW10Seeds.txt")
-    
+    #Now run the program
+    programRunner = CPPProgramRunner()
     successfullyRan,studentOutput = programRunner.run(compiledFileName, '', '')
     
+    #Check the output
     ans = stringContainsCorrectWords_WillHandleMispellings("Hello World",studentOutput)
     
-    if ans != 2:
+    if ans != True:
         deductions.append((-100,"Incorrect output"))
         
     
+    #Return the grade/comments
     return deductions
 
 
