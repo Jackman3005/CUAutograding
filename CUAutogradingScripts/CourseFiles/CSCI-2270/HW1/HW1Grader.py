@@ -57,7 +57,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     
     #Check the output
-    ans = stringContainsCorrectWords_WillHandleMispellings(open("./tests/output.txt").read(),studentOutput)
+    ans = open("./tests/output.txt").read() in studentOutput
     
     if ans != True:
         deductions.append((-100,"Incorrect output"))
