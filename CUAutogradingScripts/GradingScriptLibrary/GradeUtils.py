@@ -54,7 +54,7 @@ def appendToBeginningOfFile(file_name, text):
 #that they are expected. The words may be mispelled or have the wrong case and it will still be
 #counted as acceptable. Also if there are extra words in between the expected words they are essentially
 #ignored. As long as all of the expected words are found in order within the text then this will return true
-#In order to install the "enchant" module run "sudo pip3 install enchant"
+#In order to install the "enchant" module run "sudo pip3 install pyenchant"
 def stringContainsCorrectWords_WillHandleMispellings(expectedText,studentOutput):
     import enchant
     d = enchant.Dict("en_us")

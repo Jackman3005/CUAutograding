@@ -32,7 +32,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     #Find the submission in the folder - sometimes it isn't named exactly
     submissionFinder = SubmissionFinder.SubmissionFinder()
     
-    expectedFileName = "1.cpp"
+    expectedFileName = "Assignment1Solution.cpp"
     submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileName.strip(".cpp"))
     if (not submissionFileName):
         submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "1")
@@ -45,7 +45,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     locationOfFile = folderNameContainingSubmission + "/" + submissionFileName
     
     #Now compile the file        
-    compiledFileName = folderNameContainingSubmission + "/hw1"
+    compiledFileName = 	folderNameContainingSubmission + "/hw1"
     successfullyCompiled = CPPCompiler.compileCPPFile(locationOfFile, compiledFileName, "Homework File")
     if (not successfullyCompiled):
         deductions.append((-100,"Submission did not compile!"))
@@ -53,10 +53,11 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
          
     #Now run the program
     programRunner = CPPProgramRunner()
-    successfullyRan,studentOutput = programRunner.run(compiledFileName, '', '')
+    commandlineargs = ["messageBoard.txt"]
+    successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     
     #Check the output
-    ans = stringContainsCorrectWords_WillHandleMispellings("Hello World",studentOutput)
+    ans = stringContainsCorrectWords_WillHandleMispellings(open("./tests/output.txt").read(),studentOutput)
     
     if ans != True:
         deductions.append((-100,"Incorrect output"))
@@ -87,7 +88,7 @@ if __name__ == "__main__":
     
     submissionFolder = sys.argv[1]
     #folderContainingScripts = sys.argv[2]
-    deductions = gradeSubmission(submissionFolder,"/CourseFiles/CSCI-1300/HW10")
+    deductions = gradeSubmission(submissionFolder,"/CourseFiles/CSCI-2700/HW1")
     
     grade, comments = deductionsToGradeAndComments(deductions)
     

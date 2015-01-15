@@ -23,7 +23,7 @@ class SubmissionFinder:
     def findSubmission(self,submissionDirectory, simpleName):
         try:
             files = os.listdir(submissionDirectory)
-            for file in files:
+            for file in files:                
                 if (self.fileNameHasAcceptableExtensionAndRoughlyMatchesName(simpleName,file)):
                     return file
             return False
