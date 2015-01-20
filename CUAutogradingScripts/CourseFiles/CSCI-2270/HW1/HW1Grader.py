@@ -32,7 +32,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     #Find the submission in the folder - sometimes it isn't named exactly
     submissionFinder = SubmissionFinder.SubmissionFinder()
     
-    expectedFileName = "Assignment1Solution.cpp"
+    expectedFileName = "Assignment1Solution_v2.cpp"
     submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileName.strip(".cpp"))
     if (not submissionFileName):
         submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "1")
@@ -40,7 +40,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
             deductions.append((-100,"Could not find a file to run! Make sure you are using the correct file name and you are submitting the .cpp source code file"))
             return deductions
     if(submissionFileName != expectedFileName):
-        deductions.append((-10,"Incorrect file name! Expected \" " + expectedFileName + "\" but was \"" + submissionFileName +"\""))  
+        deductions.append((-75,"Incorrect file name! Expected \" " + expectedFileName + "\" but was \"" + submissionFileName +"\""))  
     
     locationOfFile = folderNameContainingSubmission + "/" + submissionFileName
     
@@ -51,18 +51,34 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         deductions.append((-100,"Submission did not compile!"))
         return deductions
          
-    #Now run the program
+    #Now run the program with the provided file
     programRunner = CPPProgramRunner()
     commandlineargs = ["messageBoard.txt"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
-    
+    SO_split = studentOutput.split('#')
+    SO_split = [x.split('\n') for x in SO_split]
+    solnOutput = open("./tests/output2.txt").read().split('#')
+    solnOutput = [x.split('\n') for x in solnOutput]
     #Check the output
-    ans = open("./tests/output.txt").read() in studentOutput
-    
-    if ans != True:
-        deductions.append((-100,"Incorrect output"))
+    for x in range(min(len(solnOutput),len(SO_split))):
+        for i in range(min(len(solnOutput[x]),len(SO_split[x]))):
+            if SO_split[x][i] != solnOutput[x][i]:
+                deductions.append((-10,"Expected: " + solnOutput[i] + " got: " + SO_split[i]))
+                
+    #Now run the program with a hidden test file
+    programRunner = CPPProgramRunner()
+    commandlineargs = ["messageBoard_hidden.txt"]
+    successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
+    SO_split = studentOutput.split('#')
+    SO_split = [x.split('\n') for x in SO_split]
+    solnOutput = open("./tests/output2.txt").read().split('#')
+    solnOutput = [x.split('\n') for x in solnOutput]
+    #Check the output
+    for x in range(min(len(solnOutput),len(SO_split))):
+        for i in range(min(len(solnOutput[x]),len(SO_split[x]))):
+            if SO_split[x][i] != solnOutput[x][i]:
+                deductions.append((-10,"Incorrect Output"))
         
-    
     #Return the grade/comments
     return deductions
 
