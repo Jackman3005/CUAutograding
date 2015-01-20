@@ -1,30 +1,68 @@
-chicken, For sale, 60
-dresser, For sale, 2000
-chicken, For sale, 100
-dresser, Wanted, 200
-truck, Wanted, 1000
-bike, For sale, 500
-bike, For sale, 50
-chicken, For sale, 25
-truck, Wanted, 1000
-chicken, For sale, 10000
-truck, Wanted, 1000
-truck, Wanted, 1000
-chicken, For sale, 1
-truck, For sale, 2000
-dresser, Wanted, 50
-truck, For sale, 1500
-dresser, For sale, 450
-truck, For sale, 2000
-dresser, For sale, 500
-chicken, For sale, 5
-truck, Wanted, 1000
-chicken, For sale, 2
-microwave, Wanted, 10
-chicken, For sale, 1
-chicken, For sale, 25
-chicken, For sale, 1
-chicken, For sale, 25
-chicken, For sale, 15
-truck, Wanted, 1000
-bike, For sale, 10
+microwave 200
+chicken 25
+microwave 2
+bike 100
+bike 50
+truck 300
+bike 100
+truck 2000
+truck 9000
+truck 4000
+dresser 800
+microwave 60
+dresser 60
+truck 500
+dresser 200
+truck 500
+chicken 5
+chicken 16
+truck 2000
+chicken 5
+microwave 65
+bike 50
+chicken 25
+microwave 2
+chicken 25
+chicken 16
+microwave 60
+bike 75
+microwave 200
+chicken 25
+bike 10
+microwave 2
+truck 4000
+microwave 2
+truck 4000
+#
+chicken, for sale, 60
+chicken, for sale, 100
+bike, for sale, 500
+chicken, for sale, 10000
+dresser, for sale, 2000
+dresser, wanted, 50
+truck, wanted, 1000
+dresser, for sale, 450
+truck, for sale, 2000
+truck, wanted, 1000
+dresser, for sale, 500
+dresser, wanted, 200
+truck, wanted, 1000
+chicken, for sale, 15
+chicken, for sale, 2
+chicken, for sale, 5
+chicken, for sale, 1
+chicken, for sale, 25
+chicken, for sale, 1
+chicken, for sale, 25
+bike, for sale, 50
+chicken, for sale, 15
+truck, wanted, 1000
+truck, wanted, 1000
+chicken, for sale, 25
+truck, wanted, 1000
+microwave, wanted, 10
+truck, for sale, 2000
+truck, for sale, 2000
+bike, for sale, 10
+#
+operations:1917

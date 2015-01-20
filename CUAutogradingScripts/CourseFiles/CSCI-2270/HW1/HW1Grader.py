@@ -25,6 +25,8 @@ from GradingScriptLibrary import SubmissionFinder
 anyNumberRE =  re.compile("([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)")
 
 def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
+    os.chdir(folderContainingScripts)
+    
     deductions = []
     studentFeedback("\n--------------------------------------------------------------")
     studentFeedback("Grading:",folderNameContainingSubmission)
@@ -32,7 +34,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     #Find the submission in the folder - sometimes it isn't named exactly
     submissionFinder = SubmissionFinder.SubmissionFinder()
     
-    expectedFileName = "Assignment1Solution_v2.cpp"
+    expectedFileName = "Assignment1.cpp"
     submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, expectedFileName.strip(".cpp"))
     if (not submissionFileName):
         submissionFileName = submissionFinder.findSubmission(folderNameContainingSubmission, "1")
@@ -55,29 +57,95 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     programRunner = CPPProgramRunner()
     commandlineargs = ["messageBoard.txt"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
+    solnOutput = open("./tests/output.txt").read()
+    
     SO_split = studentOutput.split('#')
     SO_split = [x.split('\n') for x in SO_split]
-    solnOutput = open("./tests/output2.txt").read().split('#')
+    
+    solnOutput = solnOutput.split("#")
     solnOutput = [x.split('\n') for x in solnOutput]
     #Check the output
-    for x in range(min(len(solnOutput),len(SO_split))):
-        for i in range(min(len(solnOutput[x]),len(SO_split[x]))):
-            if SO_split[x][i] != solnOutput[x][i]:
-                deductions.append((-10,"Expected: " + solnOutput[i] + " got: " + SO_split[i]))
+    
+    #warn/deduct if there are not the same number of sections
+    if not len(solnOutput) == len(SO_split):
+        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have two (and only two) '#' signs")
+        deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
+        return deductions
+    
+    sections = {"Items Sold":0, "Items Remaining":1, "Number of Operations":2}
+    
+    for x in sections:
+        #warn if there are not the same number of sections
+        if not len(solnOutput[sections[x]]) == len(SO_split[sections[x]]):
+            studentFeedback("Your output for " + x + " does not have the same number of lines as the solution.")
+            deductions.append((-20,"Incorrect number of lines in " + x + " section."))
+        
+        SO_range = range(len(SO_split[sections[x]]))
+        soln_range = range(len(solnOutput[sections[x]]))
+        
+        for i in range(max(len(soln_range),len(SO_range))):
+            if i not in SO_range or i not in soln_range:
+                if i <= max(soln_range):
+                    deductions.append((-10,"You have too few lines for this section"))
+                else:
+                    deductions.append((-10,"You have too many lines for this section"))
+                
+                continue
+                    
+            elif SO_split[sections[x]][i] != solnOutput[sections[x]][i]:
+                if x == "Number of Operations":
+                    #hint for number of operations
+                    studentFeedback("**Operations Counter: If your counter is too low, verify that you are shifting the array when items are removed. If your counter is too high, verify that you are only counting loop operations and that you are not doing unnecessary passes over the data.")
+                
+                deductions.append((-10,"Expected: " + solnOutput[sections[x]][i] + " got: " + SO_split[sections[x]][i]))
+    
+    
                 
     #Now run the program with a hidden test file
     programRunner = CPPProgramRunner()
     commandlineargs = ["messageBoard_hidden.txt"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
+    solnOutput = open("./tests/output_hidden.txt").read()
+    
     SO_split = studentOutput.split('#')
     SO_split = [x.split('\n') for x in SO_split]
-    solnOutput = open("./tests/output2.txt").read().split('#')
+    
+    solnOutput = solnOutput.split("#")
     solnOutput = [x.split('\n') for x in solnOutput]
     #Check the output
-    for x in range(min(len(solnOutput),len(SO_split))):
-        for i in range(min(len(solnOutput[x]),len(SO_split[x]))):
-            if SO_split[x][i] != solnOutput[x][i]:
-                deductions.append((-10,"Incorrect Output"))
+    
+    #warn/deduct if there are not the same number of sections
+    if not len(solnOutput) == len(SO_split):
+        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have two (and only two) '#' signs")
+        deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
+        return deductions
+    
+    sections = {"Items Sold":0, "Items Remaining":1, "Number of Operations":2}
+    
+    for x in sections:
+        #warn if there are not the same number of sections
+        if not len(solnOutput[sections[x]]) == len(SO_split[sections[x]]):
+            studentFeedback("Your output for " + x + " does not have the same number of lines as the solution.")
+            deductions.append((-20,"Incorrect number of lines in " + x + " section."))
+        
+        SO_range = range(len(SO_split[sections[x]]))
+        soln_range = range(len(solnOutput[sections[x]]))
+        
+        for i in range(max(len(soln_range),len(SO_range))):
+            if i not in SO_range or i not in soln_range:
+                if i <= max(soln_range):
+                    deductions.append((-10,"You have too few lines for this section"))
+                else:
+                    deductions.append((-10,"You have too many lines for this section"))
+                
+                continue
+                    
+            elif SO_split[sections[x]][i] != solnOutput[sections[x]][i]:
+                if x == "Number of Operations":
+                    #hint for number of operations
+                    studentFeedback("**Operations Counter: If your counter is too low, verify that you are shifting the array when items are removed. If your counter is too high, verify that you are only counting loop operations and that you are not doing unnecessary passes over the data.")
+                
+                deductions.append((-10,"Inexact Output"))
         
     #Return the grade/comments
     return deductions
@@ -103,8 +171,8 @@ if __name__ == "__main__":
     sys.stdout = sys.stderr
     
     submissionFolder = sys.argv[1]
-    #folderContainingScripts = sys.argv[2]
-    deductions = gradeSubmission(submissionFolder,"/CourseFiles/CSCI-2700/HW1")
+    scriptFolder = os.path.join(sys.argv[2], "CourseFiles/CSCI-2270/HW1")
+    deductions = gradeSubmission(submissionFolder, scriptFolder)
     
     grade, comments = deductionsToGradeAndComments(deductions)
     

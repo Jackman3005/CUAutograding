@@ -1,0 +1,39 @@
+chicken, for sale, 60
+microwave, wanted, 201
+bike, for sale, 60
+bike, wanted, 60
+truck, for sale, 2000
+truck, wanted, 1000
+dresser, for sale, 20
+truck, wanted, 9000
+truck, wanted, 8000
+microwave, for sale, 60
+dresser, for sale, 2000
+dresser, wanted, 60
+dresser, for sale, 450
+truck, for sale, 2000
+truck, wanted, 1000
+truck, for sale, 500
+dresser, for sale, 500
+dresser, wanted, 200
+chicken, wanted, 5
+chicken, for sale, 5
+truck, wanted, 1000
+chicken, for sale, 1
+chicken, for sale, 25
+chicken, wanted, 16
+truck, wanted, 2000
+chicken, for sale, 15
+chicken, wanted, 5
+chicken, for sale, 2
+microwave, wanted, 15
+truck, wanted, 1000
+chicken, for sale, 25
+chicken, wanted, 25
+truck, wanted, 1000
+microwave, wanted, 10
+bike, for sale, 10
+truck, for sale, 2000
+microwave, for sale, 2
+truck, wanted, 4000
+bike, for sale, 10

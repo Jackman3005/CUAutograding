@@ -1,0 +1,21 @@
+bike 60
+truck 9000
+microwave 60
+dresser 60
+truck 2000
+truck 500
+chicken 5
+chicken 16
+chicken 2
+chicken 25
+truck 2000
+microwave 2
+#
+chicken, for sale, 60
+dresser, for sale, 2000
+dresser, for sale, 450
+truck, wanted, 1000
+dresser, for sale, 500
+dresser, wanted, 200
+#
+operations:338
