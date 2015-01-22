@@ -54,7 +54,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         return deductions
          
     #Now run the program with the provided file
-    programRunner = CPPProgramRunner()
+    programRunner = CPPProgramRunner(timeout=10)
     commandlineargs = ["Hemmingway_edit.txt"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     solnOutput = open("./outputs/Hemmingway_test.txt").read()
@@ -72,7 +72,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
         return deductions
     
-    sections = {"Items Sold":0, "Items Remaining":1, "Number of Operations":2}
+    sections = {"Word List":0, "Times Doubled":1}
     
     for x in sections:
         #warn if there are not the same number of sections
@@ -102,7 +102,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
                 
     #Now run the program with a hidden test file
-    programRunner = CPPProgramRunner()
+    programRunner = CPPProgramRunner(timeout=10)
     commandlineargs = ["HungerGames_edit.txt"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     solnOutput = open("./outputs/HungerGames_test.txt").read()
@@ -119,8 +119,6 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have two (and only two) '#' signs")
         deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
         return deductions
-    
-    sections = {"Items Sold":0, "Items Remaining":1, "Number of Operations":2}
     
     for x in sections:
         #warn if there are not the same number of sections
