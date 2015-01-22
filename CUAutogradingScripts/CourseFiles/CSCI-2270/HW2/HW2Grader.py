@@ -55,7 +55,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
          
     #Now run the program with the provided file
     programRunner = CPPProgramRunner(timeout=10)
-    commandlineargs = ["Hemmingway_edit.txt"]
+    commandlineargs = ["Hemmingway_edit.txt", "5"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     solnOutput = open("./outputs/Hemmingway_test.txt").read()
     
@@ -72,7 +72,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
         deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
         return deductions
     
-    sections = {"Word List":0, "Times Doubled":1}
+    sections = {"Top Words":0, "Times Doubled":1, "Unique Words":2}
     
     for x in sections:
         #warn if there are not the same number of sections
@@ -103,7 +103,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                 
     #Now run the program with a hidden test file
     programRunner = CPPProgramRunner(timeout=10)
-    commandlineargs = ["HungerGames_edit.txt"]
+    commandlineargs = ["HungerGames_edit.txt","3"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     solnOutput = open("./outputs/HungerGames_test.txt").read()
     

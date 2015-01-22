@@ -1,12 +1,7 @@
-5648 - the
-3756 - i
-2749 - to
-2419 - and
-2153 - a
-1933 - of
-1631 - my
-1485 - in
-1012 - it
-935 - me
+682 - is
+492 - peeta
+479 - its
 #
-7
+Array doubled: 7
+#
+Unique non-common words: 7681
