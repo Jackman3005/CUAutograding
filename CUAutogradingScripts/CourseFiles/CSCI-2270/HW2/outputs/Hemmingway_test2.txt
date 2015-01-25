@@ -1,0 +1,16 @@
+226 - was
+135 - fish
+129 - old
+129 - man
+106 - him
+98 - had
+96 - said
+94 - is
+78 - line
+73 - now
+#
+Array doubled: 5
+#
+Unique non-common words: 1827
+#
+Total non-common words: 7475

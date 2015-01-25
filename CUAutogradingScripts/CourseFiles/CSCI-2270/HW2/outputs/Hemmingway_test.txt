@@ -3,7 +3,14 @@
 249 - old
 246 - man
 230 - him
+205 - had
+191 - is
+189 - said
+173 - now
+165 - thought
 #
 Array doubled: 5
 #
 Unique non-common words: 2585
+#
+Total non-common words: 15186

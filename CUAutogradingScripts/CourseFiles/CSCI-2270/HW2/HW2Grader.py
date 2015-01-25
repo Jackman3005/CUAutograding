@@ -14,8 +14,7 @@ import subprocess
 import re
 import shutil
 import codecs
-from GradingScriptLibrary.GradeUtils import studentFeedback,\
-    getAllNumbersFromString,remove_control_chars,stringContainsCorrectWords_WillHandleMispellings
+from GradingScriptLibrary.GradeUtils import studentFeedback,getAllNumbersFromString,remove_control_chars#,stringContainsCorrecthreerds_WillHandleMispellings
 from GradingScriptLibrary.GradeUtils import appendToBeginningOfFile
 from GradingScriptLibrary.CPPHelpers import CPPCompiler
 from GradingScriptLibrary.CPPHelpers.CPPProgramRunner import CPPProgramRunner
@@ -55,7 +54,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
          
     #Now run the program with the provided file
     programRunner = CPPProgramRunner(timeout=10)
-    commandlineargs = ["Hemmingway_edit.txt", "5"]
+    commandlineargs = ["Hemmingway_edit.txt", "10"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     solnOutput = open("./outputs/Hemmingway_test.txt").read()
     
@@ -68,7 +67,7 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     #warn/deduct if there are not the same number of sections
     if not len(solnOutput) == len(SO_split):
-        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have two (and only two) '#' signs")
+        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have three (and only three) '#' signs")
         deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
         return deductions
     
@@ -99,11 +98,9 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                 
                 deductions.append((-10,"Expected: " + solnOutput[sections[x]][i] + " got: " + SO_split[sections[x]][i]))
     
-    
-                
-    #Now run the program with a hidden test file
+    #Now run the program with the provided file
     programRunner = CPPProgramRunner(timeout=10)
-    commandlineargs = ["HungerGames_edit.txt","3"]
+    commandlineargs = ["HungerGames_edit.txt", "10"]
     successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
     solnOutput = open("./outputs/HungerGames_test.txt").read()
     
@@ -116,7 +113,53 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
     
     #warn/deduct if there are not the same number of sections
     if not len(solnOutput) == len(SO_split):
-        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have two (and only two) '#' signs")
+        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have three (and only three) '#' signs")
+        deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
+        return deductions
+    
+    sections = {"Top Words":0, "Times Doubled":1, "Unique Words":2}
+    
+    for x in sections:
+        #warn if there are not the same number of sections
+        if not len(solnOutput[sections[x]]) == len(SO_split[sections[x]]):
+            studentFeedback("Your output for " + x + " does not have the same number of lines as the solution.")
+            deductions.append((-20,"Incorrect number of lines in " + x + " section."))
+        
+        SO_range = range(len(SO_split[sections[x]]))
+        soln_range = range(len(solnOutput[sections[x]]))
+        
+        for i in range(max(len(soln_range),len(SO_range))):
+            if i not in SO_range or i not in soln_range:
+                if i <= max(soln_range):
+                    deductions.append((-10,"You have too few lines for this section"))
+                else:
+                    deductions.append((-10,"You have too many lines for this section"))
+                
+                continue
+                    
+            elif SO_split[sections[x]][i] != solnOutput[sections[x]][i]:
+                if x == "Number of Operations":
+                    #hint for number of operations
+                    studentFeedback("**Operations Counter: If your counter is too low, verify that you are shifting the array when items are removed. If your counter is too high, verify that you are only counting loop operations and that you are not doing unnecessary passes over the data.")
+                
+                deductions.append((-10,"Expected: " + solnOutput[sections[x]][i] + " got: " + SO_split[sections[x]][i]))
+                
+    #Now run the program with a test file
+    programRunner = CPPProgramRunner(timeout=10)
+    commandlineargs = ["HungerGames_edit_odd.txt","10"]
+    successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
+    solnOutput = open("./outputs/HungerGames_test2.txt").read()
+    
+    SO_split = studentOutput.split('#')
+    SO_split = [x.split('\n') for x in SO_split]
+    
+    solnOutput = solnOutput.split("#")
+    solnOutput = [x.split('\n') for x in solnOutput]
+    #Check the output
+    
+    #warn/deduct if there are not the same number of sections
+    if not len(solnOutput) == len(SO_split):
+        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have three (and only three) '#' signs")
         deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
         return deductions
     
@@ -144,7 +187,50 @@ def gradeSubmission(folderNameContainingSubmission,folderContainingScripts):
                     studentFeedback("**Operations Counter: If your counter is too low, verify that you are shifting the array when items are removed. If your counter is too high, verify that you are only counting loop operations and that you are not doing unnecessary passes over the data.")
                 
                 deductions.append((-10,"Inexact Output"))
+    
+    #Now run the program with a test file
+    programRunner = CPPProgramRunner(timeout=10)
+    commandlineargs = ["Hemmingway_edit_odd.txt","10"]
+    successfullyRan,studentOutput = programRunner.run(compiledFileName, commandlineargs, '')
+    solnOutput = open("./outputs/Hemmingway_test2.txt").read()
+    
+    SO_split = studentOutput.split('#')
+    SO_split = [x.split('\n') for x in SO_split]
+    
+    solnOutput = solnOutput.split("#")
+    solnOutput = [x.split('\n') for x in solnOutput]
+    #Check the output
+    
+    #warn/deduct if there are not the same number of sections
+    if not len(solnOutput) == len(SO_split):
+        studentFeedback("Your output does not have the same number of sections as the solution. Check to ensure you have three (and only three) '#' signs")
+        deductions.append((-75,"Incorrect number of output sections (separated by '#')"))
+        return deductions
+    
+    for x in sections:
+        #warn if there are not the same number of sections
+        if not len(solnOutput[sections[x]]) == len(SO_split[sections[x]]):
+            studentFeedback("Your output for " + x + " does not have the same number of lines as the solution.")
+            deductions.append((-20,"Incorrect number of lines in " + x + " section."))
         
+        SO_range = range(len(SO_split[sections[x]]))
+        soln_range = range(len(solnOutput[sections[x]]))
+        
+        for i in range(max(len(soln_range),len(SO_range))):
+            if i not in SO_range or i not in soln_range:
+                if i <= max(soln_range):
+                    deductions.append((-10,"You have too few lines for this section"))
+                else:
+                    deductions.append((-10,"You have too many lines for this section"))
+                
+                continue
+                    
+            elif SO_split[sections[x]][i] != solnOutput[sections[x]][i]:
+                if x == "Number of Operations":
+                    #hint for number of operations
+                    studentFeedback("**Operations Counter: If your counter is too low, verify that you are shifting the array when items are removed. If your counter is too high, verify that you are only counting loop operations and that you are not doing unnecessary passes over the data.")
+                
+                deductions.append((-10,"Inexact Output"))
 
     #Return the grade/comments
     return deductions

@@ -1,0 +1,16 @@
+305 - is
+250 - its
+250 - peeta
+230 - can
+215 - im
+208 - says
+194 - when
+186 - him
+181 - no
+173 - are
+#
+Array doubled: 6
+#
+Unique non-common words: 5531
+#
+Total non-common words: 29613
