@@ -11,6 +11,6 @@
 #
 Array doubled: 5
 #
-Unique non-common words: 1827
+Unique non-common words: 1829
 #
-Total non-common words: 7475
+Total non-common words: 7480
